@@ -1,0 +1,8 @@
+rules:
+- id: base64_blob
+  name: Base64 Blob (long)
+  regex: '(?<![A-Za-z0-9+/=])[A-Za-z0-9+/]{40,}={0,2}(?![A-Za-z0-9+/=])'
+  default_severity: medium
+  category: blob
+  provider: generic
+  weight: 0.5

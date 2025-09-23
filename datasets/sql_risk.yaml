@@ -1,0 +1,49 @@
+rules:
+  - id: select_from
+    name: SELECT_FROM
+    regex: '(?is)\\bSELECT\\b[\\s\\S]{0,1000}\\bFROM\\b'
+    default_severity: low
+    category: sql
+    weight: 0.15
+
+  - id: insert_values
+    name: INSERT_VALUES
+    regex: '(?is)\\bINSERT\\s+INTO\\b[\\s\\S]{0,500}\\bVALUES\\b'
+    default_severity: low
+    category: sql
+    weight: 0.15
+
+  - id: boolean_tautology
+    name: BOOLEAN_TAUTOLOGY_OR_1_EQ_1
+    regex: '(?i)\b(?:or|and)\b\s*["'']?\s*1\s*["'']?\s*=\s*["'']?\s*1'
+    default_severity: medium
+    category: sql
+    weight: 0.50
+
+  - id: union_select
+    name: UNION_SELECT
+    regex: '(?is)\\bUNION\\s+SELECT\\b'
+    default_severity: high
+    category: sql
+    weight: 0.60
+
+  - id: stacked_queries
+    name: STACKED_QUERIES
+    regex: '(?is);\\s*(?:DROP|ALTER|TRUNCATE|--)'
+    default_severity: high
+    category: sql
+    weight: 0.90
+
+  - id: suspicious_comment
+    name: SUSPICIOUS_COMMENT
+    regex: '(--\\s*$)|(/\\*[\\s\\S]*?\\*/)'
+    default_severity: low
+    category: sql
+    weight: 0.15
+      
+  - id: sql_union_select_columns
+    name: UNION_SELECT_WITH_COLUMNS
+    regex: '(?is)\\bUNION\\b\\s+SELECT\\b\\s+[A-Za-z0-9_\\-,\\s\\*]+'
+    default_severity: high
+    category: sql
+    weight: 0.70

@@ -1,0 +1,31 @@
+redaction:
+  rules:
+    aws_access_key:      { prefix: 4, suffix: 3, mask: '...' }
+    aws_secret_key:      { prefix: 4, suffix: 3, mask: '...' }
+    gcp_api_key:         { prefix: 4, suffix: 4, mask: '...' }
+    github_pat:          { prefix: 3, suffix: 3, mask: '***' }
+    slack_token:         { prefix: 4, suffix: 4, mask: '...' }
+    stripe_api_key:      { prefix: 4, suffix: 4, mask: '...' }
+    twilio_api_key:      { prefix: 4, suffix: 4, mask: '...' }
+    rsa_private_key:     { prefix: 0, suffix: 0, mask: '[REDACTED_KEY_BLOCK]' }
+    pgp_private_key:     { prefix: 0, suffix: 0, mask: '[REDACTED_KEY_BLOCK]' }
+    dsa_private_key:     { prefix: 0, suffix: 0, mask: '[REDACTED_KEY_BLOCK]' }
+    ec_private_key:      { prefix: 0, suffix: 0, mask: '[REDACTED_KEY_BLOCK]' }
+    slack_webhook:       { prefix: 6, suffix: 6, mask: '...' }
+    jwt_token:           { prefix: 6, suffix: 6, mask: '...' }
+
+  defaults:
+    provider:
+      aws:     { prefix: 4, suffix: 3, mask: '...' }
+      gcp:     { prefix: 4, suffix: 4, mask: '...' }
+      github:  { prefix: 3, suffix: 3, mask: '***' }
+      slack:   { prefix: 6, suffix: 6, mask: '...' }
+      stripe:  { prefix: 4, suffix: 4, mask: '...' }
+      twilio:  { prefix: 4, suffix: 4, mask: '...' }
+      generic: { prefix: 3, suffix: 3, mask: '[REDACTED]' }
+
+    category:
+      secret:  { prefix: 3, suffix: 3, mask: '[REDACTED]' }
+      code-risk: { passthrough: true }
+
+    global:    { prefix: 0, suffix: 0, mask: '***' }

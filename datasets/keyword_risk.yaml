@@ -1,0 +1,28 @@
+rules:
+  - id: keyword_password
+    name: Keyword Password
+    term: 'password'
+    default_severity: medium
+    category: keyword
+    weight: 0.6
+
+  - id: keyword_secret
+    name: Keyword Secret
+    term: 'secret'
+    default_severity: medium
+    category: keyword
+    weight: 0.6
+
+  - id: keyword_token
+    name: Keyword Token
+    term: 'token'
+    default_severity: medium
+    category: keyword
+    weight: 0.55
+
+  - id: keyword_confidential
+    name: Keyword Confidential
+    term: 'confidential'
+    default_severity: low
+    category: keyword
+    weight: 0.3

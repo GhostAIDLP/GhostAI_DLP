@@ -1,0 +1,80 @@
+rules:
+  - id: password_in_url
+    name: Password in URL
+    regex: '[a-zA-Z]{3,10}://[^/\s:@]{3,20}:[^/\s:@]{3,20}@.{1,100}["''\s]'
+    default_severity: high
+    category: code-risk
+    provider: generic
+    weight: 0.92
+
+  - id: eval_usage
+    name: Dangerous eval() usage
+    regex: '(?i)\beval\s*\('
+    default_severity: high
+    category: code-risk
+    provider: generic
+    weight: 0.88
+
+  - id: exec_usage
+    name: Dangerous exec()/Function/vm usage
+    regex: '(?i)(\bexec\s*\(|\bnew\s+Function\s*\(|\bvm\.runInNewContext\s*\()'
+    default_severity: high
+    category: code-risk
+    provider: generic
+    weight: 0.90
+
+  - id: hardcoded_password_assignment
+    name: Hardcoded Password Assignment
+    regex: '(?i)\b(pass(word)?|pwd)\b\s*[:=]\s*["''][^"'' ]{6,}["'']'
+    default_severity: high
+    category: code-risk
+    provider: generic
+    weight: 0.86
+
+  - id: generic_api_key_assignment
+    name: Hardcoded API/Secret Assignment
+    regex: '(?i)\b(api[_-]?key|access[_-]?key|access[_-]?token|client[_-]?secret|secret)\b.{0,20}[:=]\s*["''][A-Za-z0-9_-]{16,}["'']'
+    default_severity: high
+    category: code-risk
+    provider: generic
+    weight: 0.82
+
+  - id: db_conn_generic
+    name: DB Connection String (generic)
+    regex: '(?i)\b(?:jdbc:[a-z0-9]+://|mysql://|postgres(?:ql)?:\/\/|mongodb(?:\+srv)?:\/\/|redis://)[^\s"'' ]+'
+    default_severity: medium
+    category: code-risk
+    provider: generic
+    weight: 0.48
+
+  - id: postgres_uri
+    name: Postgres URI
+    regex: '(?i)\bpostgres(?:ql)?:\/\/[^\s"'' ]+'
+    default_severity: medium
+    category: code-risk
+    provider: postgres
+    weight: 0.45
+
+  - id: mongodb_uri
+    name: MongoDB URI
+    regex: '(?i)\bmongodb(?:\+srv)?:\/\/[^\s"'' ]+'
+    default_severity: medium
+    category: code-risk
+    provider: mongodb
+    weight: 0.45
+
+  - id: concat_near_query
+    name: CONCAT_NEAR_QUERY
+    regex: '(?is)(?:SELECT|INSERT|UPDATE|DELETE)\b[\s\S]{0,200}(["''][^"'' ]+["'']\s*\+\s*[A-Za-z0-9_.$\[]+)'
+    default_severity: medium
+    category: code-risk
+    provider: generic
+    weight: 0.75
+
+  - id: format_near_query
+    name: FORMAT_NEAR_QUERY
+    regex: '(?is)(?:SELECT|INSERT|UPDATE|DELETE)\b[\s\S]{0,200}(%s|\.format\(|f[''"])'
+    default_severity: medium
+    category: code-risk
+    provider: generic
+    weight: 0.70

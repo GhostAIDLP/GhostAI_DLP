@@ -1,0 +1,7 @@
+rules:
+  - id: tautology_or
+    name: TAUTOLOGY_OR
+    regex: '(?i)\b(?:or|and)\b\s+[''"]?\s*1\s*[''"]?\s*=\s*[''"]?\s*1'
+    default_severity: high
+    category: injection
+    weight: 0.9
