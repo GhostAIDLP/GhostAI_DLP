@@ -4,18 +4,15 @@ from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field
 from json import JSONEncoder
 
-
 class Metadata(BaseModel):
     source: str
     lang: str
-
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, o: Any) -> Any:
         if isinstance(o, Metadata):
             return o.model_dump()
         return super().default(o)
-
 
 def get_heuristics_data(text: str, tenant_id: Optional[str] = None, call_back_url: Optional[str] = None, metadata: Optional[Metadata] = None):
     if not text:
