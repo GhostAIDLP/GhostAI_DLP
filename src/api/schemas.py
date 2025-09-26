@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field
 
 # JSON REQUEST/RESPONSE
@@ -7,6 +7,7 @@ class Metadata(BaseModel):
     lang: str
 
 class HeurisiticsBreakdown(BaseModel):
+    name: str
     score: int
     reasons: Optional[List[str]] = []
 
@@ -28,9 +29,9 @@ class RiskSyncResponse(BaseModel):
     severity: str
     score: int
     breakdown: Breakdown
-    limits: Limits
-    version: str
-
+    flags: Dict[str, Any]
+    latency_ms: float
+    
 class RiskAsyncResponse(BaseModel):
     request_id: str
     status: str

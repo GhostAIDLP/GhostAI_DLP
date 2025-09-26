@@ -11,8 +11,9 @@ from heuristics.config import BaseConfig
 
 class Heuristics(object):
 
-    def load_rules(name: str):
-        DATASETS = Path(__file__).resolve().parent.parent / "datasets"
+    def load_rules(name: str):        
+        DATASETS = Path(__file__).resolve().parent.parent.parent / "datasets"
+
         with open(DATASETS / name, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
         return data.get("rules", [])

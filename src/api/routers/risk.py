@@ -1,10 +1,11 @@
 from flask import Flask, request, jsonify
 from api.heuristics import Heuristics  # the singleton you built above
+from api.schemas import RiskSyncResponse
 
 app = Flask(__name__)
 
 @app.route("/risk:sync", methods=["POST"])
-def get_sync_risk():
+def get_sync_risk() -> RiskSyncResponse:
     payload = request.get_json(silent=True) or {}
     text = payload.get("text", "")
     if not isinstance(text, str) or not text.strip():
@@ -13,6 +14,7 @@ def get_sync_risk():
     res = Heuristics.ENGINE.score(text)  # HeuristicsResult dataclass or dict
     # If it's a dataclass, convert to dict (depends on your implementation)
     out = {
+        "request_id": payload.get("tenant_id", ""),
         "score": res.score,
         "severity": res.severity.value if hasattr(res.severity, "value") else res.severity,
         "breakdown": [{"name": c.name, "score": c.score, "reasons": c.reasons} for c in res.breakdown],
