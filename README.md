@@ -1,32 +1,35 @@
 # GhostAI_DLP 🕵️‍♂️🔐
 
-A developer-first **Data Loss Prevention (DLP)** tool for detecting risky patterns in code.  
+A developer-first Data Loss Prevention (DLP) tool for detecting risky patterns in code.
 Built with Flask + Python CLI.
 
 ---
 
-## 📌 Roadmap
-- ✅ CLI-based detection engine (secrets, blobs, entropy)
-- ⏳ Pre-commit + GitHub CI integration
-- ⏳ AI post-processing filter to reduce false positives
-- ⏳ SaaS dashboard for org-wide reporting
+## Roadmap
+
+* [x] CLI-based detection engine (secrets, blobs, entropy)
+* [ ] Pre-commit + GitHub CI integration
+* [ ] AI post-processing filter to reduce false positives
+* [ ] SaaS dashboard for org-wide reporting
 
 ---
 
-## ⚡ CLI Usage (Important!)
+## CLI Usage (Important!)
 
-The CLI lives under `src/cli/`.  
-Because this project uses packages (`src/`), you must run the CLI with Python’s **module flag** (`-m`) from the **project root**.
+The CLI lives under `src/cli/`.
+Because this project uses packages (`src/`), you must run the CLI with Python’s module flag (`-m`) from the project root.
 
-### 🔹 Interactive Mode
+### Interactive Mode
+
 Run:
 
 ```bash
 python3 -m src.cli.cli
+```
+
 Example session:
 
-java
-Copy code
+```bash
 Enter a code prompt (or type 'exit' to quit): // detector test: obvious AWS creds (FAKE ONLY)
 Enter the next line (or press Enter to submit): const AWS = require('aws-sdk');
 ...
@@ -39,84 +42,162 @@ Enter the next line (or press Enter to submit): const AWS = require('aws-sdk');
         { "name": "keywords", "score": 0.6, "reasons": ["keyword_secret detected"] }
     ]
 }
+```
+
 The CLI sends the snippet to the Flask API and prints a JSON result with:
 
-score
+* score
+* severity
+* breakdown of detectors triggered
 
-severity
+---
 
-breakdown of detectors triggered
+## Setup & Running Flask
 
-🛠️ Setup & Running Flask
-1. Prerequisites
+### 1. Prerequisites
+
 Make sure you have Python 3.x installed:
 
-bash
-Copy code
+```bash
 python3 --version
-If you don’t have Python installed, download it from python.org/downloads.
+```
+
+If you don’t have Python installed, download it from [python.org/downloads](https://www.python.org/downloads).
 
 Also ensure pip (Python’s package manager) is installed:
 
-bash
-Copy code
+```bash
 pip --version
-2. Install Virtual Environment
-bash
-Copy code
+```
+
+### 2. Install Virtual Environment
+
+```bash
 pip install virtualenv
-3. Create a Virtual Environment
-bash
-Copy code
+```
+
+### 3. Create a Virtual Environment
+
+```bash
 python3 -m venv .venv
-This will create a folder named .venv/ that contains your isolated environment.
+```
 
-4. Activate the Virtual Environment
-macOS / Linux
+This will create a folder named `.venv/` that contains your isolated environment.
 
-bash
-Copy code
+### 4. Activate the Virtual Environment
+
+**macOS / Linux**
+
+```bash
 source .venv/bin/activate
-Windows (PowerShell)
+```
 
-powershell
-Copy code
+**Windows (PowerShell)**
+
+```bash
 .venv\Scripts\activate
-When activated, you’ll see (.venv) in your terminal prompt.
+```
+
+When activated, you’ll see `(.venv)` in your terminal prompt.
 To deactivate at any time:
 
-bash
-Copy code
+```bash
 deactivate
-5. Install Dependencies
-With the environment activated, install dependencies:
+```
 
-bash
-Copy code
+### 5. Install Dependencies
+
+With the environment activated:
+
+```bash
 pip install -r requirements.txt
-6. Run the Flask API
+```
+
+### 6. Run the Flask API
+
 From the project root:
 
-bash
-Copy code
+```bash
 flask --app src/api/routers/risk run
+```
+
 Flask will run at:
 
-👉 http://127.0.0.1:5000
+[http://127.0.0.1:5000](http://127.0.0.1:5000)
 
-7. Deactivate the Virtual Environment
+### 7. Deactivate the Virtual Environment
+
 When finished:
 
-bash
-Copy code
+```bash
 deactivate
-🐛 Troubleshooting
-Error: ModuleNotFoundError: No module named 'src'
-✅ Fix: Always run with -m:
+```
 
-bash
-Copy code
+---
+
+## Troubleshooting
+
+**Error:** `ModuleNotFoundError: No module named 'src'`
+**Fix:** Always run with `-m`:
+
+```bash
 python3 -m src.cli.cli
-Warning: NotOpenSSLWarning from urllib3
-⚠️ This is non-blocking — safe to ignore in development.
+```
+
+**Warning:** `NotOpenSSLWarning from urllib3`
+This is non-blocking — safe to ignore in development.
+
+---
+
+## New Direction: Automation Mode
+
+We now support an automation-friendly CLI (`src/cli/auto_cli.py`).
+Unlike the interactive mode, this:
+
+* Reads input piped from stdin or from CLI args
+* Outputs raw JSON
+* Is designed for GitHub Actions / CI integration
+
+Example:
+
+```bash
+echo "print('hello')" | python3 -m src.cli.automate
+```
+
+---
+
+## New Direction: GitHub Actions Integration
+
+We added a workflow under `.github/workflows/dlp.yml` that:
+
+* Runs on every push/PR to `main`
+* Spins up Python + venv
+* Installs dependencies
+* Pipes code into `src.cli.automate` for scanning
+
+**Current demo:**
+It runs a hardcoded test string (`// detector test: obvious AWS creds (FAKE ONLY)`).
+Next step: replace with a file scan (for example: `find . -type f -name "*.py"`).
+
+---
+
+## New Direction: Repo File Scanning
+
+Instead of static test snippets, the plan is to:
+
+* Recursively scan `.py` (or all) files in the repo
+* Collect JSON results into `dlp_results.json`
+* Upload as a GitHub Actions artifact
+
+This will let us build a dataset of findings automatically.
+
+---
+
+## New Direction: AI Post-Filtering
+
+We’ll eventually add a RAG + embeddings layer to filter down false positives (FPs).
+
+* Baseline FP goal: <10% for common secret detectors.
+* Long-term: AI filter to re-rank findings before surfacing.
+
 
