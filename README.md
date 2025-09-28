@@ -2,6 +2,13 @@
 
 Got it 👍 — here’s the full documentation in one complete README.md file (all in Markdown, nothing skipped):
 
+## Roadmap
+- ✅ CLI-based detection engine (secrets, blobs, entropy)
+- ✅ Pre-commit + GitHub CI integration
+- ⏳ AI post-processing filter to reduce false positives
+- ⏳ SaaS dashboard for org-wide reporting
+
+
 # Python Virtual Environment Setup & Running Flask
 
 This guide explains how to set up a Python virtual environment, activate it, install Flask, run a Flask application, and use CLI tools inside the environment.
