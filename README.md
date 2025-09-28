@@ -1,43 +1,49 @@
-# GhostAI_DLP
+# GhostAI_DLP 🕵️‍♂️🔐
 
-Got it 👍 — here’s the full documentation in one complete README.md file (all in Markdown, nothing skipped):
+A developer-first **Data Loss Prevention (DLP)** tool for detecting risky patterns in code.  
+Built with Flask + Python CLI.
 
-## Roadmap
+---
+
+## 📌 Roadmap
 - ✅ CLI-based detection engine (secrets, blobs, entropy)
 - ⏳ Pre-commit + GitHub CI integration
 - ⏳ AI post-processing filter to reduce false positives
 - ⏳ SaaS dashboard for org-wide reporting
 
-
-# Python Virtual Environment Setup & Running Flask
-
-This guide explains how to set up a Python virtual environment, activate it, install Flask, run a Flask application, and use CLI tools inside the environment.
-
 ---
-CLI Usage (important!)
 
-The CLI lives under src/cli/.
-Because this project uses packages (src/), you must run the CLI with Python’s module flag (-m) from the project root.
+## ⚡ CLI Usage (Important!)
 
-Interactive Mode
+The CLI lives under `src/cli/`.  
+Because this project uses packages (`src/`), you must run the CLI with Python’s **module flag** (`-m`) from the **project root**.
 
-For pasting multiline code and analyzing it:
+### 🔹 Interactive Mode
+Paste multiline code and analyze it interactively:
 
+```bash
 python3 -m src.cli.cli
-
-
-Example:
 
 Enter a code prompt (or type 'exit' to quit): // detector test: obvious AWS creds (FAKE ONLY)
 Enter the next line (or press Enter to submit): const AWS = require('aws-sdk');
 ...
 
+{
+    "score": 0.98,
+    "severity": "high",
+    "breakdown": [
+        { "name": "secrets", "score": 0.9, "reasons": ["aws_access_key detected"] },
+        { "name": "keywords", "score": 0.6, "reasons": ["keyword_secret detected"] }
+    ]
+}
+The CLI sends the snippet to the Flask API and prints a JSON result with:
 
-This will send the snippet to the Flask API and print the JSON result (score, severity, breakdown, etc.).
+score
 
-Automation Mode (coming soon)
+severity
 
-Automation tooling (src/cli/automate.py) is being added, but for now interactive CLI is the primary entrypoint.
+breakdown of detectors triggered
+
 ## 1. Prerequisites
 
 Make sure you have **Python 3.x** installed. Check with:
