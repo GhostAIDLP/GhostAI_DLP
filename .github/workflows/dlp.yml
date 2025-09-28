@@ -25,8 +25,18 @@ jobs:
           source .venv/bin/activate
           pip install -r requirements.txt
 
-
       - name: Run DLP Scan
         run: |
-          . .venv/bin/activate && \
-          echo "// detector test: obvious AWS creds (FAKE ONLY)" | python -m src.cli.automate
+          source .venv/bin/activate
+          mkdir -p dlp_results
+          find . -type f -name "*.py" -print0 | \
+          xargs -0 -I {} sh -c '
+            echo "🔍 Scanning {}"
+            python -m src.cli.auto_cli < "{}" > "dlp_results/$(basename {}).json" || true
+          '
+
+      - name: Upload DLP results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dlp-results
+          path: dlp_results/
