@@ -19,11 +19,14 @@ The CLI lives under `src/cli/`.
 Because this project uses packages (`src/`), you must run the CLI with Python’s **module flag** (`-m`) from the **project root**.
 
 ### 🔹 Interactive Mode
-Paste multiline code and analyze it interactively:
+Run:
 
 ```bash
 python3 -m src.cli.cli
+Example session:
 
+java
+Copy code
 Enter a code prompt (or type 'exit' to quit): // detector test: obvious AWS creds (FAKE ONLY)
 Enter the next line (or press Enter to submit): const AWS = require('aws-sdk');
 ...
@@ -44,98 +47,76 @@ severity
 
 breakdown of detectors triggered
 
-## 1. Prerequisites
+🛠️ Setup & Running Flask
+1. Prerequisites
+Make sure you have Python 3.x installed:
 
-Make sure you have **Python 3.x** installed. Check with:
-
-```bash
+bash
+Copy code
 python3 --version
-
-If you don’t have Python installed, download it from python.org/downloads
-.
+If you don’t have Python installed, download it from python.org/downloads.
 
 Also ensure pip (Python’s package manager) is installed:
 
+bash
+Copy code
 pip --version
-
 2. Install Virtual Environment
-
-Install virtualenv if it’s not already available:
-
+bash
+Copy code
 pip install virtualenv
-
 3. Create a Virtual Environment
-
-Navigate to your project directory and run:
-
-python3 -m venv venv
-
-This will create a folder named venv/ that contains your isolated environment.
+bash
+Copy code
+python3 -m venv .venv
+This will create a folder named .venv/ that contains your isolated environment.
 
 4. Activate the Virtual Environment
+macOS / Linux
 
-Linux / macOS:
-
+bash
+Copy code
 source .venv/bin/activate
+Windows (PowerShell)
 
-Windows (PowerShell):
-
+powershell
+Copy code
 .venv\Scripts\activate
-
-When activated, you’ll see (venv) in your terminal prompt.
-
+When activated, you’ll see (.venv) in your terminal prompt.
 To deactivate at any time:
 
+bash
+Copy code
 deactivate
+5. Install Dependencies
+With the environment activated, install dependencies:
 
-5. Install Flask
+bash
+Copy code
+pip install -r requirements.txt
+6. Run the Flask API
+From the project root:
 
-With the environment activated, install Flask:
+bash
+Copy code
+flask --app src/api/routers/risk run
+Flask will run at:
 
-- pip install flask
+👉 http://127.0.0.1:5000
 
-Confirm installation:
+7. Deactivate the Virtual Environment
+When finished:
 
-- pip show flask
-
-Install all the needed dependencies using requirements.txt:
-
-- pip install -r requirements.txt
-
-Run the application from root folder:
-
-- flask --app src/api/routers/risk run 
-
-Flask will run on:
-
-- http://127.0.0.1:5000
-
-Visit this URL in your browser to see your app.
-
-7. Using Flask CLI
-
-Flask comes with a built-in command-line tool. With your virtual environment activated, you can access it directly.
-
-Check available commands:
-
-flask --help
-
-To run your app with the CLI, set the FLASK_APP environment variable:
-
-Linux / macOS:
-
-export FLASK_APP=app.py
-flask run
-
-Windows (PowerShell):
-
-$env:FLASK_APP = "app.py"
-flask run
-
-This will start the Flask server the same way as running python app.py.
-
-8. Deactivate the Virtual Environment
-
-When finished, deactivate the environment:
-
+bash
+Copy code
 deactivate
+🐛 Troubleshooting
+Error: ModuleNotFoundError: No module named 'src'
+✅ Fix: Always run with -m:
+
+bash
+Copy code
+python3 -m src.cli.cli
+Warning: NotOpenSSLWarning from urllib3
+⚠️ This is non-blocking — safe to ignore in development.
+
