@@ -14,7 +14,30 @@ Got it 👍 — here’s the full documentation in one complete README.md file (
 This guide explains how to set up a Python virtual environment, activate it, install Flask, run a Flask application, and use CLI tools inside the environment.
 
 ---
+CLI Usage (important!)
 
+The CLI lives under src/cli/.
+Because this project uses packages (src/), you must run the CLI with Python’s module flag (-m) from the project root.
+
+Interactive Mode
+
+For pasting multiline code and analyzing it:
+
+python3 -m src.cli.cli
+
+
+Example:
+
+Enter a code prompt (or type 'exit' to quit): // detector test: obvious AWS creds (FAKE ONLY)
+Enter the next line (or press Enter to submit): const AWS = require('aws-sdk');
+...
+
+
+This will send the snippet to the Flask API and print the JSON result (score, severity, breakdown, etc.).
+
+Automation Mode (coming soon)
+
+Automation tooling (src/cli/automate.py) is being added, but for now interactive CLI is the primary entrypoint.
 ## 1. Prerequisites
 
 Make sure you have **Python 3.x** installed. Check with:
