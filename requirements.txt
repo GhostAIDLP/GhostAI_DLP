@@ -10,7 +10,7 @@ Flask==3.1.2
 Flask-Pydantic==0.13.2
 Flask-RQ2==18.3
 freezegun==1.5.5
--e git+ssh://git@github.com/dleonsilva7226/GhostAI_DLP.git@de25c2fc1935598ad528c0ded9126abd676450c5#egg=ghostai_dlp
+-e .
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.28.1
