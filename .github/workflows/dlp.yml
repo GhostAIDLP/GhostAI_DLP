@@ -1,11 +1,3 @@
-name: GhostAI DLP Scan
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
 jobs:
   dlp-scan:
     runs-on: ubuntu-latest
@@ -17,14 +9,21 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'   
+          python-version: '3.11'
+          cache: 'pip'          # <-- enables pip cache
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
         run: |
           python -m venv .venv
           source .venv/bin/activate
-          pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Start Flask API
+        run: |
+          source .venv/bin/activate
+          nohup flask --app src/api/routers/risk run --port=5000 &
+          sleep 5
 
       - name: Run DLP Scan
         run: |
@@ -41,3 +40,4 @@ jobs:
         with:
           name: dlp-results
           path: dlp_results/
+
