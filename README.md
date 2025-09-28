@@ -4,7 +4,7 @@ Got it 👍 — here’s the full documentation in one complete README.md file (
 
 ## Roadmap
 - ✅ CLI-based detection engine (secrets, blobs, entropy)
-- ✅ Pre-commit + GitHub CI integration
+- ⏳ Pre-commit + GitHub CI integration
 - ⏳ AI post-processing filter to reduce false positives
 - ⏳ SaaS dashboard for org-wide reporting
 
