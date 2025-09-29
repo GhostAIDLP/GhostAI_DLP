@@ -50,36 +50,22 @@ jobs:
           name: dlp-results
           path: dlp_results/
 
-      - name: Install Gitleaks
-        run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_$(uname -s)_$(uname -m).tar.gz \
-          | tar -xz gitleaks
-
-      - name: Install TruffleHog
-        run: |
-          curl -sSL https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_$(uname -s)_$(uname -m).tar.gz \
-          | tar -xz trufflehog
-
       - name: Run Gitleaks
-        run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_$(uname -s)_$(uname -m).tar.gz | tar -xz gitleaks
-          ./gitleaks detect --no-git -v --source . --report-format json --report-path gitleaks.json || true
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: >
+            detect --no-git --source .
+            --report-format json --report-path gitleaks.json
+            --exit-code 0
 
-      - name: Run TruffleHog
+      - name: Verify gitleaks.json
         run: |
-          curl -sSL https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_$(uname -s)_$(uname -m).tar.gz | tar -xz trufflehog
-          ./trufflehog filesystem --no-update --json . > trufflehog.json || true
+          test -s gitleaks.json || (echo "gitleaks.json missing" && exit 1)
+          head -n 3 gitleaks.json || true
 
-      - name: Normalize comparator reports
+      - name: Normalize comparator reports → dlp_results/
         run: |
           source .venv/bin/activate
-          python src/normalize_reports.py --gitleaks gitleaks.json --trufflehog trufflehog.json --out dlp_results
-
-      - name: Ingest results into DB
-        if: always()
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-          source .venv/bin/activate
-          python src/upload_results.py --repo "$GITHUB_REPOSITORY"
+          python src/normalize_reports.py --gitleaks gitleaks.json --out dlp_results
+          echo "normalized files:" $(find dlp_results -name "*.gitleaks.json" | wc -l)
+      
