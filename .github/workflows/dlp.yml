@@ -1,11 +1,11 @@
 name: GhostAI DLP Scan
 
-on:               # 👈 this block is required
+on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:   # 👈 optional: lets you trigger manually from Actions tab
+  workflow_dispatch:   # optional: trigger manually
 
 jobs:
   dlp-scan:
@@ -19,29 +19,25 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
-          cache-dependency-path: requirements.txt
 
-      - name: Install dependencies
-        run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          pip install -r requirements.txt
+      - name: Install uv
+        run: pip install uv
+
+      - name: Sync dependencies
+        run: uv sync
 
       - name: Start Flask API
         run: |
-          source .venv/bin/activate
-          nohup flask --app src/api/routers/risk run --port=5000 &
+          nohup uv run flask --app src/api/routers/risk run --port=5000 &
           sleep 5
 
       - name: Run DLP Scan
         run: |
-          source .venv/bin/activate
           mkdir -p dlp_results
           find . -type f -name "*.py" -print0 | \
           xargs -0 -I {} sh -c '
             echo "🔍 Scanning {}"
-            python -m src.cli.auto_cli < "{}" > "dlp_results/$(basename {}).json" || true
+            uv run python -m src.cli.auto_cli < "{}" > "dlp_results/$(basename {}).json" || true
           '
 
       - name: Upload DLP results
@@ -65,7 +61,5 @@ jobs:
 
       - name: Normalize comparator reports → dlp_results/
         run: |
-          source .venv/bin/activate
-          python src/normalize_reports.py --gitleaks gitleaks.json --out dlp_results
+          uv run python src/normalize_reports.py --gitleaks gitleaks.json --out dlp_results
           echo "normalized files:" $(find dlp_results -name "*.gitleaks.json" | wc -l)
-      
