@@ -181,6 +181,22 @@ Next step: replace with a file scan (for example: `find . -type f -name "*.py"`)
 
 ---
 
+## New Direction: Automated Ingestion into Database
+
+We now support exporting scan results into a Postgres database.
+
+- **Artifacts:** All detectors write per-file JSONs into `dlp_results/`.
+- **Uploader:** Run `python src/upload_results.py --repo <org/repo>` to insert results into Postgres.
+- **Schema:** Rows include file path, detector, severity, score, reasons, and timestamps.
+
+Example verification:
+
+```sql
+SELECT detector, COUNT(*) FROM dlp_findings GROUP BY 1;
+```
+
+---
+
 ## New Direction: Repo File Scanning
 
 Instead of static test snippets, the plan is to:

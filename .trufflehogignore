@@ -1,0 +1,8 @@
+^\.git/
+^\.venv/
+^node_modules/
+^dlp_results/
+^gitleaks\.json$
+^trufflehog\.json$
+^.*\.dist-info/RECORD$
+^scripts/curl_samples\.sh$

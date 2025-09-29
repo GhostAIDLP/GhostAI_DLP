@@ -134,6 +134,13 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
+# DLP scan artifacts
+dlp_results/
+gitleaks.json
+trufflehog.json
+*.gitleaks.json
+*.trufflehog.json
+
 # Environments
 .env
 .envrc
@@ -205,3 +212,12 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# Database + logs
+*.db
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db

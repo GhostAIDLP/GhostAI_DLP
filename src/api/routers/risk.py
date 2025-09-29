@@ -1,6 +1,11 @@
 from flask import Flask, request, jsonify
 from api.heuristics import Heuristics  # the singleton you built above
 from api.schemas import RiskSyncResponse
+import sqlalchemy
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = Flask(__name__)
 
