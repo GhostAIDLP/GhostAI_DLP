@@ -37,15 +37,13 @@ jobs:
           name: dlp-results
           path: dlp_results/
 
-      - name: Install Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-
       - name: Run Gitleaks
-        run: |
-          gitleaks detect --no-git --source . \
-            --report-format json \
-            --report-path gitleaks.json \
-            --exit-code 0
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --no-git --source . \
+                --report-format json \
+                --report-path gitleaks.json \
+                --exit-code 0
 
       - name: Verify gitleaks.json
         run: |
