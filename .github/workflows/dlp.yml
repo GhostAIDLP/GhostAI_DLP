@@ -1,4 +1,10 @@
 jobs:
+  on:
+    push:
+      branches: [ main ]
+    pull_request:
+      branches: [ main ]
+    workflow_dispatch:
   dlp-scan:
     runs-on: ubuntu-latest
 
