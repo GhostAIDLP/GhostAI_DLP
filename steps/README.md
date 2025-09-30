@@ -8,7 +8,7 @@
 
 -Run our scanner on full repo → ingest JSON into Postgres.
 
--Run Gitleaks + TruffleHog in parallel → normalize into same schema.
+-Run Gitleaks + TruffleHog + Secret Scanner in parallel → normalize into same schema.
 
 2. Consensus + Labeling
 
