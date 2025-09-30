@@ -1,69 +1,111 @@
-# --- Config ---
-PY        ?= python3
-PIP       ?= pip
-VENV      ?= .venv
-PORT      ?= 5000
-APP       ?= app           # flask app import path (e.g., 'app' or 'app:create_app')
-FLASK_ENV ?= development
+# ---------- Config (keep in sync with your YAML) ----------
+DLP_DIR            ?= dlp_results
+GITLEAKS_REPORT    ?= gitleaks.json
+TRUFFLEHOG_REPORT  ?= trufflehog.json
+TH_EXCLUDE         ?= .trufflehog-exclude.txt
+GITLEAKS_CONFIG    ?= .gitleaks.toml
+API_APP            ?= api.app:create_app
 
-# --- Helper ---
-.PHONY: help venv install dev serve cli-install cli up down health fmt test clean
+# Fail policy:
+#   FAIL=0 => non-blocking (push/schedule parity)
+#   FAIL=1 => fail on findings (PR parity)
+FAIL ?= 0
+GITLEAKS_EXIT_CODE ?= $(FAIL)
+
+# ---------- Auto-detect binaries; fallback to Docker if missing ----------
+GL := $(shell command -v gitleaks 2>/dev/null)
+TH := $(shell command -v trufflehog 2>/dev/null)
+
+# Default to local binaries if present; else use Docker images (no local installs needed)
+GITLEAKS_BIN      := $(if $(GL),gitleaks,docker run --rm -v "$$PWD:/repo" zricethezav/gitleaks:latest gitleaks)
+TRUFFLEHOG_BIN    := $(if $(TH),trufflehog,docker run --rm -v "$$PWD:/repo" ghcr.io/trufflesecurity/trufflehog:latest)
+
+# Paths differ when using Docker: container works in /repo
+GITLEAKS_SOURCE        := $(if $(GL),.,/repo)
+GITLEAKS_REPORT_PATH   := $(if $(GL),$(GITLEAKS_REPORT),/repo/$(GITLEAKS_REPORT))
+GITLEAKS_CONFIG_PATH   := $(if $(GL),$(GITLEAKS_CONFIG),/repo/$(GITLEAKS_CONFIG))
+
+TRUFFLEHOG_FS_PATH     := $(if $(TH),.,/repo)
+TRUFFLEHOG_EXCLUDE_PATH:= $(if $(TH),$(TH_EXCLUDE),/repo/$(TH_EXCLUDE))
+
+.PHONY: help clean api-up dlp gitleaks trufflehog trufflehog-exclude normalize scan scan-pr
 
 help:
-	@echo "Common targets:"
-	@echo "  make venv          # create virtual env"
-	@echo "  make install       # install deps (app + CLI)"
-	@echo "  make dev           # run Flask dev server with reload"
-	@echo "  make serve         # run production server (gunicorn)"
-	@echo "  make cli-install   # install CLI entrypoint (ghostai-cli)"
-	@echo "  make cli ARGS='\"scan this log\"'       # run CLI with prompt"
-	@echo "  make cli ARGS='--file auth.log'        # run CLI with file"
-	@echo "  make up / make down                    # docker compose up/down"
-	@echo "  make health       # curl health endpoint"
-	@echo "  make fmt          # format (optional)"
-	@echo "  make test         # run tests"
-	@echo "  make clean        # remove caches and venv"
-
-venv:
-	$(PY) -m venv $(VENV)
-	@echo "Run: source $(VENV)/bin/activate"
-
-install: venv
-	. $(VENV)/bin/activate && $(PIP) install -U pip
-	. $(VENV)/bin/activate && if [ -f requirements.txt ]; then $(PIP) install -r requirements.txt; fi
-	. $(VENV)/bin/activate && $(PIP) install -e .
-
-dev:
-	. $(VENV)/bin/activate && \
-	export FLASK_APP=$(APP) FLASK_ENV=$(FLASK_ENV) && \
-	flask run --port $(PORT)
-
-serve:
-	. $(VENV)/bin/activate && \
-	gunicorn "$(APP):app" --workers 2 --bind 0.0.0.0:$(PORT)
-
-cli-install:
-	. $(VENV)/bin/activate && $(PIP) install -e .
-
-# Use: make cli ARGS='"quick scan"'  OR  make cli ARGS='--file auth.log'
-cli:
-	. $(VENV)/bin/activate && ghostai-cli $(ARGS)
-
-up:
-	docker compose up -d
-
-down:
-	docker compose down
-
-health:
-	curl -fsS http://127.0.0.1:$(PORT)/health || true
-
-fmt:
-	. $(VENV)/bin/activate && python -m black . || true
-	. $(VENV)/bin/activate && python -m ruff check --fix . || true
-
-test:
-	. $(VENV)/bin/activate && pytest -q
+	@echo "make scan       # clean, API up, DLP, gitleaks, trufflehog, normalize (non-blocking)"
+	@echo "make scan-pr    # same as scan, but fail on findings (PR parity)"
+	@echo "make clean      # remove generated artifacts"
+	@echo "make gitleaks   # run only gitleaks (to $(GITLEAKS_REPORT))"
+	@echo "make trufflehog # run only trufflehog (to $(TRUFFLEHOG_REPORT))"
 
 clean:
-	rm -rf $(VENV) **/__pycache__ .pytest_cache .ruff_cache dist build *.egg-info
+	rm -rf $(DLP_DIR) $(GITLEAKS_REPORT) $(TRUFFLEHOG_REPORT) /tmp/flask.log $(TH_EXCLUDE)
+	mkdir -p $(DLP_DIR)
+
+api-up:
+	nohup uv run flask --app $(API_APP) run --host 127.0.0.1 --port=5000 > /tmp/flask.log 2>&1 & \
+	sleep 2 && curl -sf http://127.0.0.1:5000/health
+
+dlp:
+	find . -type d \( -name .git -o -name .venv -o -name venv -o -name node_modules -o -name $(DLP_DIR) \) -prune -o \
+	       -type f -name "*.py" -print0 | \
+	xargs -0 -I {} sh -c 'echo "🔍 Scanning {}"; uv run python -m src.cli.auto_cli < "{}" > "$(DLP_DIR)/$$(basename {}).json" || true'
+
+# ---------- Gitleaks ----------
+gitleaks:
+	@echo ">> Using Gitleaks: $(if $(GL),local binary,$(GITLEAKS_BIN))"
+	@CFG=""; if [ -f "$(GITLEAKS_CONFIG)" ]; then CFG="--config $(GITLEAKS_CONFIG_PATH)"; echo ">> Config: $(GITLEAKS_CONFIG)"; fi; \
+	$(GITLEAKS_BIN) detect --no-git --source $(GITLEAKS_SOURCE) $$CFG \
+	  --report-format json --report-path "$(GITLEAKS_REPORT_PATH)" --exit-code $(GITLEAKS_EXIT_CODE)
+	test -s "$(GITLEAKS_REPORT)"    # ensure host file exists even with Docker
+	head -n 3 "$(GITLEAKS_REPORT)" || true
+
+# ---------- TruffleHog ----------
+trufflehog-exclude:
+	@printf '%s\n' \
+	'^\.git/' '^node_modules/' '^\.venv/' '^venv/' \
+	'^alembic/' '^$(DLP_DIR)/' \
+	'^datasets/secret_risk\.yaml$$' > "$(TH_EXCLUDE)"
+
+# NOTE the dependency on trufflehog-exclude
+trufflehog: trufflehog-exclude
+	@echo ">> Using TruffleHog: $(if $(TH),local binary,$(TRUFFLEHOG_BIN))"
+	# ensure exclude exists even if someone runs this target directly
+	@[ -f "$(TH_EXCLUDE)" ] || (echo "creating $(TH_EXCLUDE)"; \
+	  printf '%s\n' '^\.git/' '^node_modules/' '^\.venv/' '^venv/' '^alembic/' '^$(DLP_DIR)/' '^datasets/secret_risk\.yaml$$' > "$(TH_EXCLUDE)")
+	@if [ "$(FAIL)" = "1" ]; then \
+	  set -e; \
+	  $(TRUFFLEHOG_BIN) filesystem $(TRUFFLEHOG_FS_PATH) \
+	    --results=verified,unknown \
+	    --no-update \
+	    --json \
+	    --exclude-paths "$(TRUFFLEHOG_EXCLUDE_PATH)" \
+	    --fail \
+	    > "$(TRUFFLEHOG_REPORT)"; \
+	else \
+	  $(TRUFFLEHOG_BIN) filesystem $(TRUFFLEHOG_FS_PATH) \
+	    --results=verified,unknown \
+	    --no-update \
+	    --json \
+	    --exclude-paths "$(TRUFFLEHOG_EXCLUDE_PATH)" \
+	    > "$(TRUFFLEHOG_REPORT)" || true; \
+	fi
+	test -f "$(TRUFFLEHOG_REPORT)"
+	head -n 3 "$(TRUFFLEHOG_REPORT)" || true
+
+
+
+# ---------- Normalize ----------
+normalize:
+	uv run python src/normalize_reports.py \
+	  --gitleaks   "$(GITLEAKS_REPORT)" \
+	  --trufflehog "$(TRUFFLEHOG_REPORT)" \
+	  --out "$(DLP_DIR)"
+	@echo "normalized files:" $$(find "$(DLP_DIR)" -name "*.json" | wc -l)
+
+# Default: non-blocking (push/schedule behavior)
+scan: clean api-up dlp gitleaks trufflehog normalize
+
+# PR parity: fail on findings
+scan-pr: GITLEAKS_EXIT_CODE=1
+scan-pr: FAIL=1
+scan-pr: scan

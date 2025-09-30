@@ -7,6 +7,11 @@ on:   # 👈 this must be at the top level, not inside jobs
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  GITLEAKS_REPORT: gitleaks.json
+  TRUFFLEHOG_REPORT: trufflehog.json
+  DLP_DIR: dlp_results
+
 jobs:
   dlp-scan:
     runs-on: ubuntu-latest
@@ -27,38 +32,99 @@ jobs:
 
       - name: Start Flask API
         run: |
-          nohup uv run flask --app src/api/routers/risk run --port=5000 &
+          nohup uv run flask --app api.app:create_app run --host 127.0.0.1 --port=5000 > /tmp/flask.log 2>&1 &
           sleep 5
 
+      - name: Health check
+        run: |
+          curl -sf http://127.0.0.1:5000/health || { echo "Flask not healthy"; tail -n 200 /tmp/flask.log; exit 1; }
+        
       - name: Run DLP Scan
         run: |
-          mkdir -p dlp_results
+          mkdir -p "$DLP_DIR"
           find . -type f -name "*.py" -print0 | \
           xargs -0 -I {} sh -c '
             echo "🔍 Scanning {}"
-            uv run python -m src.cli.auto_cli < "{}" > "dlp_results/$(basename {}).json" || true
+            uv run python -m src.cli.auto_cli < "{}" > "'"$DLP_DIR"'"/"$(basename "{}")".json || true
           '
 
       - name: Upload DLP results
         uses: actions/upload-artifact@v4
         with:
           name: dlp-results
-          path: dlp_results/
+          path: ${{ env.DLP_DIR }}/
 
+      # ---------- GITLEAKS ----------
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         with:
-          args: detect --no-git --source . \
-                --report-format json \
-                --report-path gitleaks.json \
-                --exit-code 0
+          args: >
+            detect --no-git --source .
+            --config .gitleaks.toml
+            --report-format json
+            --report-path ${{ env.GITLEAKS_REPORT }}
+            --exit-code 0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify gitleaks.json
         run: |
-          test -s gitleaks.json || (echo "gitleaks.json missing" && exit 1)
-          head -n 3 gitleaks.json || true
+          test -s "${GITLEAKS_REPORT}" || (echo "gitleaks report missing" && exit 1)
+          head -n 3 "${GITLEAKS_REPORT}" || true
+      
+      
+      # ---------- TRUFFLEHOG ----------
+      - name: Install TruffleHog (v3 CLI)
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh \
+            | sh -s -- -b /usr/local/bin
+          trufflehog --version
 
+      - name: Create TruffleHog exclude list
+        run: |
+          cat > .trufflehog-exclude.txt <<'EOF'
+          ^\.git/
+          ^node_modules/
+          ^\.venv/
+          ^venv/
+          ^alembic/
+          ^${{ env.DLP_DIR }}/
+          ^datasets/secret_risk\.yaml$
+          EOF
+
+      - name: Run TruffleHog (filesystem => JSON file)
+        run: |
+          trufflehog filesystem . \
+            --results=verified,unknown \
+            --no-update \
+            --json \
+            --exclude-paths .trufflehog-exclude.txt \
+            > "${TRUFFLEHOG_REPORT}" || true
+
+      - name: Verify trufflehog.json
+        run: |
+          test -f "${TRUFFLEHOG_REPORT}" || (echo "trufflehog report missing" && exit 1)
+          head -n 3 "${TRUFFLEHOG_REPORT}" || true
+
+      - name: Upload TruffleHog artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trufflehog-results
+          path: ${{ env.TRUFFLEHOG_REPORT }}
+
+      # ---------- NORMALIZE ----------
       - name: Normalize comparator reports → dlp_results/
         run: |
-          uv run python src/normalize_reports.py --gitleaks gitleaks.json --out dlp_results
-          echo "normalized files:" $(find dlp_results -name "*.gitleaks.json" | wc -l)
+          uv run python src/normalize_reports.py \
+            --gitleaks   "${GITLEAKS_REPORT}" \
+            --trufflehog "${TRUFFLEHOG_REPORT}" \
+            --out        "${DLP_DIR}"
+          echo "normalized files:" $(find "${DLP_DIR}" -name "*.json" | wc -l)
+
+      - name: Upload normalized bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: dlp-normalized
+          path: |
+            ${{ env.GITLEAKS_REPORT }}
+            ${{ env.DLP_DIR }}/

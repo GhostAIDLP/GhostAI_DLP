@@ -30,41 +30,85 @@ def write(out_dir: Path, file_path: str, tool: str, obj: dict):
 def normalize_gitleaks(gitleaks_path: Path, out_dir: Path) -> int:
     if not gitleaks_path or not gitleaks_path.exists():
         return 0
-    data = json.loads(gitleaks_path.read_text() or "[]")
+    raw = gitleaks_path.read_text() or "[]"
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        data = []
     leaks = data.get("leaks") if isinstance(data, dict) else data
     n = 0
     for leak in leaks or []:
         fp = leak.get("File") or leak.get("file") or leak.get("Path") or "unknown"
-        rule = leak.get("Rule") or leak.get("Description") or "rule"
+        rule = (
+            leak.get("RuleID")
+            or leak.get("Rule")
+            or leak.get("Description")
+            or "rule"
+        )
         match = leak.get("Match") or leak.get("Secret") or ""
         line = leak.get("StartLine") or leak.get("Line") or ""
-        obj = payload("gitleaks", fp, [f"rule={rule}", f"match={match}", f"line={line}"], score=1.0, severity="high")
-        write(out_dir, fp, "gitleaks", obj); n += 1
+        obj = payload(
+            "gitleaks",
+            fp,
+            [f"rule={rule}", f"match={match}", f"line={line}"],
+            score=1.0,
+            severity="high",
+        )
+        write(out_dir, fp, "gitleaks", obj)
+        n += 1
     return n
+
+
+def _iter_trufflehog_objects(th_path: Path):
+    """Yield JSON objects from TruffleHog output (supports JSONL or JSON array)."""
+    text = th_path.read_text().strip()
+    if not text:
+        return
+    if text.startswith("["):
+        try:
+            arr = json.loads(text)
+            for o in arr:
+                if isinstance(o, dict):
+                    yield o
+        except json.JSONDecodeError:
+            return
+    else:
+        for line in text.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                o = json.loads(line)
+                if isinstance(o, dict):
+                    yield o
+            except json.JSONDecodeError:
+                continue
+
 
 def normalize_trufflehog(th_path: Path, out_dir: Path) -> int:
     if not th_path or not th_path.exists():
         return 0
     n = 0
-    for line in th_path.read_text().splitlines():
-        if not line.strip():
-            continue
-        try:
-            o = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        fp = (
-            o.get("SourceMetadata", {}).get("Data", {}).get("Filesystem", {}).get("file")
-            or o.get("Path") or "unknown"
-        )
-        det = o.get("DetectorName") or o.get("DetectorType") or "trufflehog"
-        ver = o.get("Verified")
+    for o in _iter_trufflehog_objects(th_path):
+        data = o.get("SourceMetadata", {}).get("Data", {})
+        fs = data.get("Filesystem", {})
+        git = data.get("Git", {})
+        fp = fs.get("file") or git.get("file") or o.get("Path") or "unknown"
+        ln = fs.get("line") or git.get("line") or o.get("Line") or ""
+        det = o.get("DetectorName") or str(o.get("DetectorType", "trufflehog"))
+        ver = bool(o.get("Verified"))
         red = o.get("Redacted") or o.get("Raw") or ""
-        ln  = o.get("SourceMetadata", {}).get("Line")
         sev = "high" if ver else "medium"
         score = 1.0 if ver else 0.8
-        obj = payload("trufflehog", fp, [f"detector={det}", f"verified={ver}", f"line={ln}", f"sample={red}"], score=score, severity=sev)
-        write(out_dir, fp, "trufflehog", obj); n += 1
+        obj = payload(
+            "trufflehog",
+            fp,
+            [f"detector={det}", f"verified={ver}", f"line={ln}", f"sample={red}"],
+            score=score,
+            severity=sev,
+        )
+        write(out_dir, fp, "trufflehog", obj)
+        n += 1
     return n
 
 def main():

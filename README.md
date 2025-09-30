@@ -168,16 +168,23 @@ echo "print('hello')" | python3 -m src.cli.automate
 
 ## New Direction: GitHub Actions Integration
 
-We added a workflow under `.github/workflows/dlp.yml` that:
+## GitHub Actions Integration (DLP)
 
-* Runs on every push/PR to `main`
-* Spins up Python + venv
-* Installs dependencies
-* Pipes code into `src.cli.automate` for scanning
+A workflow at `.github/workflows/dlp.yml` now:
 
-**Current demo:**
-It runs a hardcoded test string (`// detector test: obvious AWS creds (FAKE ONLY)`).
-Next step: replace with a file scan (for example: `find . -type f -name "*.py"`).
+- Runs on every push/PR to `main` (and can be triggered manually).
+- Sets up Python (via `uv`) and starts the Flask API.
+- Scans repository files with our internal DLP (`src.cli.auto_cli`).
+- Runs **Gitleaks** and **TruffleHog (filesystem)**.
+- Normalizes results into `dlp_results/` and uploads artifacts.
+
+**Run it locally (parity with CI):**
+```bash
+make scan      # non-blocking
+make scan-pr   # PR-style: fails on verified findings
+# Tip: start fresh if needed
+make clean && make scan
+
 
 ---
 

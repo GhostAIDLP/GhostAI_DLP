@@ -1,0 +1,22 @@
+title = "GhostAI DLP Gitleaks Config"
+
+[allowlist]
+# Ignore entire paths we never want scanned (venv, test data, migrations, generated)
+paths = [
+  '''^\.venv/''',
+  '''^venv/''',
+  '''^.env/''',
+  '''^node_modules/''',
+  '''^alembic/''',
+  '''^tests/fixtures/''',
+  '''^datasets/secret_risk\.yaml$''',   # your regex sample file
+]
+
+# (Optional) Ignore exact fake sample tokens you use for tests.
+# Keep these SURGICAL, not broad!
+regexes = [
+  # canonical “demo” JWT from docs
+  '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvZSJ9\.dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk''',
+  # a fake slack webhook shape you intentionally include in samples
+  '''https://hooks\.slack\.com/services/T12345678/B876543218/AbCdEfGhIjKlMnOpQrStUvWx24'''
+]
