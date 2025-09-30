@@ -184,7 +184,7 @@ make scan      # non-blocking
 make scan-pr   # PR-style: fails on verified findings
 # Tip: start fresh if needed
 make clean && make scan
-
+```
 
 ---
 
