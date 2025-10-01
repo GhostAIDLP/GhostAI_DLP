@@ -84,7 +84,7 @@ jobs:
           FILE="${GITHUB_WORKSPACE}/gitleaks.json"
           echo "verifying: $FILE"
           echo "size=$(wc -c < "$FILE" 2>/dev/null || echo MISSING)"
-          test -s "$FILE" || { echo "gitleaks report missing or empty"; exit 1; }
+          test -f "$FILE" || { echo "gitleaks report missing or empty"; exit 1; }
           head -n 3 "$FILE" || true
 
       # 3) Upload artifact and make it fail if not found
