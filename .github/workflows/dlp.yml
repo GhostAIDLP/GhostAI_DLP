@@ -64,12 +64,12 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         with:
           report-format: sarif
-          report-path: results.sarif
+          report-path: gitleaks.sarif
           config-path: .gitleaks.toml
 
-      - name: Verify results.sarif
+      - name: Verify gitleaks.sarif
         run: |
-          FILE="${GITHUB_WORKSPACE}/results.sarif"
+          FILE="${GITHUB_WORKSPACE}/gitleaks.sarif"
           echo "Verifying $FILE"
           test -f "$FILE" || { echo "gitleaks report missing or empty"; exit 1; }
           head -n 10 "$FILE" || true
@@ -78,10 +78,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-sarif
-          path: results.sarif
+          path: ${{ github.workspace }}/gitleaks.sarif
           if-no-files-found: error
 
-      
       # ---------- TRUFFLEHOG ----------
       - name: Install TruffleHog (v3 CLI)
         run: |
@@ -151,11 +150,15 @@ jobs:
       # ---------- NORMALIZE ----------
       - name: Convert Gitleaks SARIF → JSON
         run: |
-          jq '[.runs[]?.results[]?] | . // []' gitleaks.sarif > gitleaks.json
+          jq '[.runs[]? | .results[]?] // []' gitleaks.sarif > gitleaks.json
           echo "gitleaks.json created with $(wc -c < gitleaks.json) bytes"
           jq -e 'type=="array"' gitleaks.json >/dev/null
 
       - name: Normalize comparator reports → dlp_results/
+        env:
+          GITLEAKS_REPORT: gitleaks.json
+          TRUFFLEHOG_REPORT: ${{ env.TRUFFLEHOG_REPORT }}
+          DLP_DIR: ${{ env.DLP_DIR }}
         run: |
           uv run python src/normalize_reports.py \
             --gitleaks   "${GITLEAKS_REPORT}" \
