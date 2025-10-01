@@ -44,7 +44,7 @@ jobs:
           curl -sf http://127.0.0.1:5000/health || { echo "Flask not healthy"; tail -n 200 /tmp/flask.log; exit 1; }
         
       - name: Run DLP Scan
-        if: ${{ env.RUN_DLP_SCAN == 'false' }}
+        if: ${{ env.RUN_DLP_SCAN == 'true' }}
         run: |
           mkdir -p "$DLP_DIR"
           find . -type f -name "*.py" -print0 | \
