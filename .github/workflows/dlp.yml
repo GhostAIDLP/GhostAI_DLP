@@ -9,7 +9,7 @@ on:   # 👈 this must be at the top level, not inside jobs
 
     
 env:
-  RUN_DLP_SCAN: 'false'
+  RUN_DLP_SCAN: 'true'
   RUN_VERIFY_GITLEAKS: 'true'
   RUN_VERIFY_TRUFFLEHOG: 'true'
   GITLEAKS_REPORT: gitleaks.json
