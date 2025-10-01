@@ -32,9 +32,10 @@ class PresidioScanner(BaseScanner):
                     flagged=True,
                     score=1.0,
                     reasons=[r.to_dict() for r in results],
+                    extra={"anonymized": anonymized_text}
                 )
 
-            # No PII detected
+            # 👇 handle the "no hits" case
             return ScanResult("presidio", flagged=False, score=0.0)
 
         except Exception as e:

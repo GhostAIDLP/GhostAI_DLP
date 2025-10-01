@@ -6,14 +6,20 @@ from scanners.prompt_guard2_scanner import PromptGuard2Scanner
 from scanners.gitleaks_scanner import GitleaksScanner
 
 class Pipeline:
-    def __init__(self, config_path: str = "src/config/scanners.yaml"):
+    def __init__(self, config_path: str = "src/config/scanners.yaml", profile: str = "runtime"):
         with open(config_path, "r") as f:
-            self.config = yaml.safe_load(f)
+            config = yaml.safe_load(f)
+
+        # 🔑 pick correct profile (runtime, ci, etc.)
+        self.config = config.get("profiles", {}).get(profile, {})
+        if not self.config:
+            raise ValueError(f"Profile '{profile}' not found in config")
+
         self.scanners = []
         self._init_scanners()
 
     def _init_scanners(self):
-        cfg = self.config.get("scanners", {})
+        cfg = self.config
 
         if cfg.get("presidio", {}).get("enabled", False):
             self.scanners.append(PresidioScanner(
