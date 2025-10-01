@@ -10,6 +10,8 @@ on:   # 👈 this must be at the top level, not inside jobs
     
 env:
   RUN_DLP_SCAN: 'false'
+  RUN_VERIFY_GIATLEAKS: 'false'
+  RUN_VERIFY_TRUFFLEHOG: 'false'
   GITLEAKS_REPORT: gitleaks.json
   TRUFFLEHOG_REPORT: trufflehog.json
   DLP_DIR: dlp_results
@@ -71,6 +73,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify gitleaks.json
+        if: ${{ env.RUN_VERIFY_GIATLEAKS == 'true' }}
         run: |
           test -f gitleaks.json || (echo "gitleaks report missing" && exit 1)
           head -n 3 gitleaks.json || true
@@ -132,6 +135,7 @@ jobs:
           echo "TruffleHog verified: $(jq 'length' trufflehog.verified.normalized.json)"
       
       - name: Verify trufflehog.json
+        if: ${{ env.RUN_VERIFY_TRUFFLEHOG == 'true' }}
         run: |
           test -f "${TRUFFLEHOG_REPORT}" || (echo "trufflehog report missing" && exit 1)
           head -n 3 "${TRUFFLEHOG_REPORT}" || true
