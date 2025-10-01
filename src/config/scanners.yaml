@@ -1,0 +1,11 @@
+scanners:
+  presidio:
+    enabled: true          # turn scanner on
+    anonymize: true        # Presidio-specific option
+  trufflehog:
+    enabled: true          # turn scanner on
+  gitleaks:
+    enabled: false         # scanner will not run in pipeline
+  promptguard2:
+    enabled: true          # turn scanner on
+    threshold: 0.85        # overrides default (0.8)
