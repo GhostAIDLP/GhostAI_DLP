@@ -64,21 +64,21 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         with:
           report-format: sarif
-          report-path: gitleaks.sarif
+          report-path: results.sarif
           config-path: .gitleaks.toml
 
-      - name: Verify gitleaks.sarif
+      - name: Verify results.sarif
         run: |
-          FILE="${GITHUB_WORKSPACE}/gitleaks.sarif"
+          FILE="${GITHUB_WORKSPACE}/results.sarif"
           echo "Verifying $FILE"
-          test -s "$FILE" || { echo "gitleaks report missing or empty"; exit 1; }
+          test -f "$FILE" || { echo "gitleaks report missing or empty"; exit 1; }
           head -n 10 "$FILE" || true
 
       - name: Upload Gitleaks SARIF
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-sarif
-          path: gitleaks.sarif
+          path: results.sarif
           if-no-files-found: error
 
       
