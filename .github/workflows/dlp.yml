@@ -10,7 +10,7 @@ on:   # 👈 this must be at the top level, not inside jobs
     
 env:
   RUN_DLP_SCAN: 'false'
-  RUN_VERIFY_GIATLEAKS: 'false'
+  RUN_VERIFY_GITLEAKS: 'true'
   RUN_VERIFY_TRUFFLEHOG: 'true'
   GITLEAKS_REPORT: gitleaks.json
   TRUFFLEHOG_REPORT: trufflehog.json
@@ -67,23 +67,34 @@ jobs:
             detect --no-git --source .
             --config .gitleaks.toml
             --report-format json
-            --report-path ${{ env.GITLEAKS_REPORT }}
+            --report-path ${{ github.workspace }}/gitleaks.json
             --exit-code 0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify gitleaks.json
-        if: ${{ env.RUN_VERIFY_GIATLEAKS == 'true' }}
+      # (optional) quick debug so you can see what's there
+      - name: Debug workspace
         run: |
-          test -f gitleaks.json || (echo "gitleaks report missing" && exit 1)
-          head -n 3 gitleaks.json || true
+          pwd; ls -la
+          echo "WS=$GITHUB_WORKSPACE"
+          find "$GITHUB_WORKSPACE" -maxdepth 2 -name 'gitleaks*.json' -ls || true
 
+      # 2) Verify EXACTLY that absolute path (fail if missing OR empty)
+      - name: Verify gitleaks.json
+        if: ${{ env.RUN_VERIFY_GITLEAKS == 'true' }}
+        run: |
+          FILE="${GITHUB_WORKSPACE}/gitleaks.json"
+          echo "verifying: $FILE"
+          echo "size=$(wc -c < "$FILE" 2>/dev/null || echo MISSING)"
+          test -s "$FILE" || { echo "gitleaks report missing or empty"; exit 1; }
+          head -n 3 "$FILE" || true
+
+      # 3) Upload artifact and make it fail if not found
       - name: Upload Gitleaks artifact
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-results
-          path: ${{ env.GITLEAKS_REPORT }}
-
+          path: ${{ github.workspace }}/gitleaks.json
+          if-no-files-found: error
+      
       # ---------- TRUFFLEHOG ----------
       - name: Install TruffleHog (v3 CLI)
         run: |
