@@ -11,7 +11,7 @@ on:   # 👈 this must be at the top level, not inside jobs
 env:
   RUN_DLP_SCAN: 'false'
   RUN_VERIFY_GIATLEAKS: 'false'
-  RUN_VERIFY_TRUFFLEHOG: 'false'
+  RUN_VERIFY_TRUFFLEHOG: 'true'
   GITLEAKS_REPORT: gitleaks.json
   TRUFFLEHOG_REPORT: trufflehog.json
   DLP_DIR: dlp_results
