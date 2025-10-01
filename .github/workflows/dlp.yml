@@ -64,21 +64,20 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         with:
           report-format: sarif
-          report-path: gitleaks.sarif
           config-path: .gitleaks.toml
 
       - name: Verify gitleaks.sarif
         run: |
-          FILE="${GITHUB_WORKSPACE}/gitleaks.sarif"
+          FILE="${GITHUB_WORKSPACE}//results.sarif"
           echo "Verifying $FILE"
-          test -f "$FILE" || { echo "gitleaks report missing or empty"; exit 1; }
+          test -f "$FILE" || { echo "gitleaks SARIF missing or empty"; exit 1; }
           head -n 10 "$FILE" || true
 
       - name: Upload Gitleaks SARIF
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-sarif
-          path: ${{ github.workspace }}/gitleaks.sarif
+          path: ${{ github.workspace }}/results.sarif
           if-no-files-found: error
 
       # ---------- TRUFFLEHOG ----------
@@ -150,7 +149,7 @@ jobs:
       # ---------- NORMALIZE ----------
       - name: Convert Gitleaks SARIF → JSON
         run: |
-          jq '[.runs[]? | .results[]?] // []' gitleaks.sarif > gitleaks.json
+          jq '[.runs[]? | .results[]?] // []' results.sarif > gitleaks.json
           echo "gitleaks.json created with $(wc -c < gitleaks.json) bytes"
           jq -e 'type=="array"' gitleaks.json >/dev/null
 
