@@ -63,19 +63,17 @@ jobs:
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         with:
-          args: >
-            detect --no-git --source .
-            --config .gitleaks.toml
-            --report-format json
-            --report-path gitleaks.json          # relative => /github/workspace/gitleaks.json
-            --exit-code 0
+          config-path: .gitleaks.toml
+          report-format: json
+          report-path: gitleaks.json       # relative → /github/workspace/gitleaks.json
+          redact: false
+          args: --no-git --source .
 
       - name: Verify gitleaks.json
         run: |
           FILE="${GITHUB_WORKSPACE}/gitleaks.json"
           echo "size=$(wc -c < "$FILE" 2>/dev/null || echo MISSING)"
           test -s "$FILE" || { echo "gitleaks report missing or empty"; exit 1; }
-          # Optional: assert it’s valid JSON array
           jq -e 'type=="array"' "$FILE" >/dev/null || { echo "invalid JSON"; exit 1; }
 
       # 3) Upload artifact and make it fail if not found
