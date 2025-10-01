@@ -72,8 +72,8 @@ jobs:
 
       - name: Verify gitleaks.json
         run: |
-          test -f "${GITLEAKS_REPORT}" || (echo "gitleaks report missing" && exit 1)
-          head -n 3 "${GITLEAKS_REPORT}" || true
+          test -f gitleaks.json || (echo "gitleaks report missing" && exit 1)
+          head -n 3 gitleaks.json || true
 
       - name: Upload Gitleaks artifact
         uses: actions/upload-artifact@v4
