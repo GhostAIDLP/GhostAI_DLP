@@ -44,7 +44,7 @@ jobs:
           curl -sf http://127.0.0.1:5000/health || { echo "Flask not healthy"; tail -n 200 /tmp/flask.log; exit 1; }
         
       - name: Run DLP Scan
-        if: ${{ env.RUN_DLP_SCAN == 'true' }}
+        if: ${{ env.RUN_DLP_SCAN == 'false' }}
         run: |
           mkdir -p "$DLP_DIR"
           find . -type f -name "*.py" -print0 | \
@@ -60,29 +60,27 @@ jobs:
           path: ${{ env.DLP_DIR }}/
 
       # ---------- GITLEAKS ----------
-      - name: Run Gitleaks
+      - name: Run Gitleaks (SARIF)
         uses: gitleaks/gitleaks-action@v2
         with:
+          report-format: sarif
+          report-path: gitleaks.sarif
           config-path: .gitleaks.toml
-          report-format: json
-          report-path: gitleaks.json       # relative → /github/workspace/gitleaks.json
-          redact: false
-          args: --no-git --source .
 
-      - name: Verify gitleaks.json
+      - name: Verify gitleaks.sarif
         run: |
-          FILE="${GITHUB_WORKSPACE}/gitleaks.json"
-          echo "size=$(wc -c < "$FILE" 2>/dev/null || echo MISSING)"
+          FILE="${GITHUB_WORKSPACE}/gitleaks.sarif"
+          echo "Verifying $FILE"
           test -s "$FILE" || { echo "gitleaks report missing or empty"; exit 1; }
-          jq -e 'type=="array"' "$FILE" >/dev/null || { echo "invalid JSON"; exit 1; }
+          head -n 10 "$FILE" || true
 
-      # 3) Upload artifact and make it fail if not found
-      - name: Upload Gitleaks artifact
+      - name: Upload Gitleaks SARIF
         uses: actions/upload-artifact@v4
         with:
-          name: gitleaks-results
-          path: ${{ github.workspace }}/gitleaks.json
+          name: gitleaks-sarif
+          path: gitleaks.sarif
           if-no-files-found: error
+
       
       # ---------- TRUFFLEHOG ----------
       - name: Install TruffleHog (v3 CLI)
@@ -151,6 +149,12 @@ jobs:
             trufflehog.verified.normalized.json
 
       # ---------- NORMALIZE ----------
+      - name: Convert Gitleaks SARIF → JSON
+        run: |
+          jq '[.runs[]?.results[]?] | . // []' gitleaks.sarif > gitleaks.json
+          echo "gitleaks.json created with $(wc -c < gitleaks.json) bytes"
+          jq -e 'type=="array"' gitleaks.json >/dev/null
+
       - name: Normalize comparator reports → dlp_results/
         run: |
           uv run python src/normalize_reports.py \
