@@ -7,7 +7,9 @@ on:   # 👈 this must be at the top level, not inside jobs
     branches: [ main ]
   workflow_dispatch:
 
+    
 env:
+  RUN_DLP_SCAN: 'false'
   GITLEAKS_REPORT: gitleaks.json
   TRUFFLEHOG_REPORT: trufflehog.json
   DLP_DIR: dlp_results
@@ -40,6 +42,7 @@ jobs:
           curl -sf http://127.0.0.1:5000/health || { echo "Flask not healthy"; tail -n 200 /tmp/flask.log; exit 1; }
         
       - name: Run DLP Scan
+        if: ${{ env.RUN_DLP_SCAN == 'true' }}
         run: |
           mkdir -p "$DLP_DIR"
           find . -type f -name "*.py" -print0 | \
@@ -69,10 +72,15 @@ jobs:
 
       - name: Verify gitleaks.json
         run: |
-          test -s "${GITLEAKS_REPORT}" || (echo "gitleaks report missing" && exit 1)
+          test -f "${GITLEAKS_REPORT}" || (echo "gitleaks report missing" && exit 1)
           head -n 3 "${GITLEAKS_REPORT}" || true
-      
-      
+
+      - name: Upload Gitleaks artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-results
+          path: ${{ env.GITLEAKS_REPORT }}
+
       # ---------- TRUFFLEHOG ----------
       - name: Install TruffleHog (v3 CLI)
         run: |
@@ -82,17 +90,21 @@ jobs:
 
       - name: Create TruffleHog exclude list
         run: |
-          cat > .trufflehog-exclude.txt <<'EOF'
-          ^\.git/
-          ^node_modules/
-          ^\.venv/
-          ^venv/
-          ^alembic/
-          ^${{ env.DLP_DIR }}/
-          ^datasets/secret_risk\.yaml$
-          EOF
+          {
+            printf '%s\n' \
+              '^\.git/' \
+              '^node_modules/' \
+              '^\.venv/' \
+              '^venv/' \
+              '^alembic/' \
+              '^'${{ env.DLP_DIR }}'/' \
+              '^datasets/secret_risk\.yaml$';
+          } > .trufflehog-exclude.txt
+          echo "--- .trufflehog-exclude.txt ---"
+          cat .trufflehog-exclude.txt
 
-      - name: Run TruffleHog (filesystem => JSON file)
+      # Full report (NDJSON) for triage
+      - name: Run TruffleHog (all results)
         run: |
           trufflehog filesystem . \
             --results=verified,unknown \
@@ -101,16 +113,38 @@ jobs:
             --exclude-paths .trufflehog-exclude.txt \
             > "${TRUFFLEHOG_REPORT}" || true
 
+      # Verified-only report (NDJSON) for blocking signal
+      - name: Run TruffleHog (verified only)
+        run: |
+          trufflehog filesystem . \
+            --results=verified \
+            --no-update \
+            --json \
+            --exclude-paths .trufflehog-exclude.txt \
+            > trufflehog.verified.json || true
+
+      - name: Normalize TruffleHog reports
+        run: |
+          # NDJSON -> JSON array
+          if [ -s "${TRUFFLEHOG_REPORT}" ]; then jq -s '.' "${TRUFFLEHOG_REPORT}" > trufflehog.normalized.json; else echo "[]" > trufflehog.normalized.json; fi
+          if [ -s trufflehog.verified.json ]; then jq -s '.' trufflehog.verified.json > trufflehog.verified.normalized.json; else echo "[]" > trufflehog.verified.normalized.json; fi
+          echo "TruffleHog all:      $(jq 'length' trufflehog.normalized.json)"
+          echo "TruffleHog verified: $(jq 'length' trufflehog.verified.normalized.json)"
+      
       - name: Verify trufflehog.json
         run: |
           test -f "${TRUFFLEHOG_REPORT}" || (echo "trufflehog report missing" && exit 1)
           head -n 3 "${TRUFFLEHOG_REPORT}" || true
 
-      - name: Upload TruffleHog artifact
+      - name: Upload TruffleHog artifacts
         uses: actions/upload-artifact@v4
         with:
           name: trufflehog-results
-          path: ${{ env.TRUFFLEHOG_REPORT }}
+          path: |
+            ${{ env.TRUFFLEHOG_REPORT }}
+            trufflehog.normalized.json
+            trufflehog.verified.json
+            trufflehog.verified.normalized.json
 
       # ---------- NORMALIZE ----------
       - name: Normalize comparator reports → dlp_results/

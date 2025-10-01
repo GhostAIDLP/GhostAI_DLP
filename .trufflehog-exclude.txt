@@ -3,5 +3,5 @@
 ^\.venv/
 ^venv/
 ^alembic/
-^dlp_results/
+^dlp_results/ 
 ^datasets/secret_risk\.yaml$
