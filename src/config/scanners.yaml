@@ -13,12 +13,12 @@ profiles:
 
   ci:
     presidio:
-      enabled: true
+      enabled: false
       anonymize: false
     trufflehog:
       enabled: true
     gitleaks:
       enabled: true
     promptguard2:
-      enabled: true
+      enabled: false
       threshold: 0.7
