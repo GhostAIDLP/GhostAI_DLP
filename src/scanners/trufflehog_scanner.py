@@ -3,19 +3,15 @@ import subprocess, json
 from .base import BaseScanner, ScanResult
 
 class TrufflehogScanner(BaseScanner):
+    def _run_trufflehog(self, text: str):
+        return subprocess.run([...], input=text.encode("utf-8"), capture_output=True, check=False)
     def scan(self, text: str) -> ScanResult:
         """
         Run TruffleHog regex mode against input text.
         Captures potential secrets and normalizes to ScanResult.
         """
         try:
-            result = subprocess.run(
-                ["trufflehog", "regex", "--json", "-"],
-                input=text.encode("utf-8"),
-                capture_output=True,
-                check=False
-            )
-
+            result = self._run_trufflehog(text)
             findings = []
             for line in result.stdout.decode().splitlines():
                 if line.strip():

@@ -11,7 +11,11 @@ profiles:
       enabled: true
       threshold: 0.85
 
+  # part dan will be working on
   ci:
+    # add yelp secrets
+    yelp:
+      enabled: true
     presidio:
       enabled: false
       anonymize: false
