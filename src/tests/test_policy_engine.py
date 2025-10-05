@@ -1,5 +1,5 @@
 import pytest
-from policy import apply_policies  # adjust import
+from policies.engine import apply_policies
 
 def test_block_high_entropy():
     findings = [

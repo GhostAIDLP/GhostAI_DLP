@@ -1,6 +1,6 @@
 import pytest
 from normalize import normalize
-from policy import apply_policies
+from policies.engine import apply_policies
 
 # fake ScanResult class for testing
 class ScanResult:
