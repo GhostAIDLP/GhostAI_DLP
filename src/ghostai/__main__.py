@@ -1,32 +1,66 @@
-# ghostai/__main__.py
 """
-GhostAI SDK CLI 🧰
-Run scans or test proxy locally.
+GhostAI SDK CLI 🧠
+Run interactive scans directly from your terminal.
+
 Usage:
+    python -m ghostai
     python -m ghostai "scan this text"
 """
 
 import sys
-from .pipeline.pipeline import Pipeline
+import json
+from ghostai.cli.common import post_risk_sync, Metadata  # ← adjust import if needed
 
 def main():
-    # read text from command line
+    # If arguments are passed (non-interactive mode)
     if len(sys.argv) > 1:
         text = " ".join(sys.argv[1:])
-    else:
-        text = "Sensitive data example: API_KEY=abcd1234"
+        metadata = Metadata(source="cli", lang="en")
+        print("🔍 Running GhostAI pipeline...\n")
 
-    # init scanner pipeline
-    pipeline = Pipeline(profile="runtime")
+        try:
+            result = post_risk_sync(
+                text,
+                tenant_id="default_tenant_id",
+                call_back_url=None,
+                metadata=metadata
+            )
+            print(json.dumps(result, indent=4))
+        except Exception as e:
+            print(f"❌ Error: {e}", file=sys.stderr)
+        return
 
-    print("🔍 Running GhostAI pipeline...\n")
-    res = pipeline.run(text)
+    # Otherwise, start interactive REPL-style CLI
+    print("💬 GhostAI Interactive CLI (type 'exit' to quit)\n")
 
-    print(f"Score: {res['score']}")
-    print(f"Flags: {res['flags']}")
-    print("\nBreakdown:")
-    for b in res["breakdown"]:
-        print(f"  - {b}")
+    while True:
+        try:
+            user_input = input("Enter text to scan: ")
+        except (EOFError, KeyboardInterrupt):
+            print("\n👋 Exiting GhostAI CLI.")
+            break
+
+        if user_input.strip().lower() in ("exit", "quit"):
+            print("👋 Exiting GhostAI CLI.")
+            break
+
+        if not user_input.strip():
+            continue
+
+        metadata = Metadata(source="interactive", lang="en")
+
+        try:
+            result = post_risk_sync(
+                user_input,
+                tenant_id="default_tenant_id",
+                call_back_url=None,
+                metadata=metadata
+            )
+            print("\n🧾 Result:")
+            print(json.dumps(result, indent=4))
+        except Exception as e:
+            print(f"❌ Failed to scan: {e}", file=sys.stderr)
+        print("\n---\n")
 
 if __name__ == "__main__":
     main()

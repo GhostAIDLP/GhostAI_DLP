@@ -1,10 +1,11 @@
 # src/pipeline/pipeline.py
 import yaml
-from scanners.presidio_scanner import PresidioScanner
-from scanners.trufflehog_scanner import TrufflehogScanner
-from scanners.prompt_guard2_scanner import PromptGuard2Scanner
-from scanners.gitleaks_scanner import GitleaksScanner
 
+
+from ghostai.scanners.presidio_scanner import PresidioScanner
+from ghostai.scanners.trufflehog_scanner import TrufflehogScanner
+from ghostai.scanners.prompt_guard2_scanner import PromptGuard2Scanner
+from ghostai.scanners.gitleaks_scanner import GitleaksScanner
 class Pipeline:
     def __init__(self, config_path: str = "src/config/scanners.yaml", profile: str = "runtime"):
         with open(config_path, "r") as f:

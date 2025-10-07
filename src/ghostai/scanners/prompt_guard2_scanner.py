@@ -1,45 +1,58 @@
-# src/scanners/prompt_guard2_scanner.py
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import os
+from huggingface_hub import InferenceClient
 from .base import BaseScanner, ScanResult
 
+
 class PromptGuard2Scanner(BaseScanner):
+    """
+    Cloud-based prompt injection detector using HuggingFace's hosted Zephyr-7B model.
+    Responds instantly, no local weights required.
+    """
+
     def __init__(
         self,
-        model_name: str = "meta-llama/PromptGuard-2",
-        threshold: float = 0.8,
-        tokenizer=None,
-        model=None,
+        model_name: str = "HuggingFaceH4/zephyr-7b-beta",
+        threshold: float = 0.5,
+        token: str | None = None,
     ):
+        # read HF token from env or argument
         self.model_name = model_name
         self.threshold = threshold
-        self.tokenizer = tokenizer or AutoTokenizer.from_pretrained(model_name)
-        self.model = model or AutoModelForSequenceClassification.from_pretrained(model_name)
-
-        # Optional: robust malicious index from config
-        cfg = getattr(self.model, "config", None)
-        id2label = getattr(cfg, "id2label", None)
-        self._mal_idx = 1
-        if isinstance(id2label, dict):
-            for k, v in id2label.items():
-                if str(v).lower().startswith("mal"):
-                    self._mal_idx = int(k)
-                    break
+        self.token = token or os.getenv("HF_TOKEN")
+        self.client = InferenceClient(model_name, token=self.token)
 
     def scan(self, text: str) -> ScanResult:
+        """
+        Send text to the hosted Zephyr chat-completion endpoint.
+        Returns SAFE or INJECTION with a pseudo-score.
+        """
         try:
-            inputs = self.tokenizer(text, return_tensors="pt", truncation=True)
-            with torch.no_grad():
-                outputs = self.model(**inputs)
-                scores = torch.softmax(outputs.logits, dim=1).squeeze()
+            messages = [
+                {
+                    "role": "system",
+                    "content": "You are a security classifier. Respond only with SAFE or INJECTION.",
+                },
+                {"role": "user", "content": f"Text: {text}\nLabel:"},
+            ]
 
-            malicious_score = float(scores[self._mal_idx].item())
-            flagged = malicious_score >= self.threshold
+            response = self.client.chat_completion(messages=messages, max_tokens=5)
+            reply = response.choices[0].message["content"].strip().upper()
+
+            flagged = "INJECTION" in reply
+            score = 1.0 if flagged else 0.0
+
             return ScanResult(
-                name="promptguard2",
+                name="promptguard2-zephyr",
                 flagged=flagged,
-                score=malicious_score,
-                reasons=[{"score": malicious_score, "threshold": self.threshold}],
+                score=score,
+                reasons=[{"raw": reply, "threshold": self.threshold}],
             )
+
         except Exception as e:
-            return ScanResult("promptguard2", flagged=False, reasons=[str(e)])
+            # graceful fallback
+            return ScanResult(
+                name="promptguard2-zephyr",
+                flagged=False,
+                score=0.0,
+                reasons=[{"error": str(e)}],
+            )
