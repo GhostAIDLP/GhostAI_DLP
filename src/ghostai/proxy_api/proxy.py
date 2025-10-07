@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import requests, os
 
-from pipeline.pipeline import Pipeline   # ✅ unified scanner engine
+from ghostai.pipeline.pipeline import Pipeline
 
 app = Flask(__name__)
 
@@ -10,8 +10,9 @@ OPENAI_API_BASE = "https://api.openai.com/v1"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # 🔧 Init pipeline with rules-as-code config
-pipeline = Pipeline(config_path="src/config/scanners.yaml")
-
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONFIG_PATH = os.path.join(BASE_DIR, "config", "scanners.yaml")
+pipeline = Pipeline(config_path=CONFIG_PATH)
 
 @app.route("/v1/chat/completions", methods=["POST"])
 def proxy_chat():
