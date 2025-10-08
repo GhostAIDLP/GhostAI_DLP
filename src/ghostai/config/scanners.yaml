@@ -8,8 +8,10 @@ profiles:
     gitleaks:
       enabled: false
     promptguard2:
-      enabled: true
+      enabled: false
       threshold: 0.85
+    regex_secrets:
+      enabled: true
 
   # part dan will be working on
   ci:

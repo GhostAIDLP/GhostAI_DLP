@@ -9,22 +9,17 @@ Usage:
 
 import sys
 import json
-from ghostai.cli.common import post_risk_sync, Metadata  # ← adjust import if needed
+from ghostai.pipeline.pipeline import Pipeline
 
 def main():
     # If arguments are passed (non-interactive mode)
     if len(sys.argv) > 1:
         text = " ".join(sys.argv[1:])
-        metadata = Metadata(source="cli", lang="en")
         print("🔍 Running GhostAI pipeline...\n")
 
         try:
-            result = post_risk_sync(
-                text,
-                tenant_id="default_tenant_id",
-                call_back_url=None,
-                metadata=metadata
-            )
+            pipeline = Pipeline()
+            result = pipeline.run(text)
             print(json.dumps(result, indent=4))
         except Exception as e:
             print(f"❌ Error: {e}", file=sys.stderr)
@@ -32,6 +27,12 @@ def main():
 
     # Otherwise, start interactive REPL-style CLI
     print("💬 GhostAI Interactive CLI (type 'exit' to quit)\n")
+
+    try:
+        pipeline = Pipeline()
+    except Exception as e:
+        print(f"❌ Failed to initialize pipeline: {e}", file=sys.stderr)
+        return
 
     while True:
         try:
@@ -47,15 +48,8 @@ def main():
         if not user_input.strip():
             continue
 
-        metadata = Metadata(source="interactive", lang="en")
-
         try:
-            result = post_risk_sync(
-                user_input,
-                tenant_id="default_tenant_id",
-                call_back_url=None,
-                metadata=metadata
-            )
+            result = pipeline.run(user_input)
             print("\n🧾 Result:")
             print(json.dumps(result, indent=4))
         except Exception as e:

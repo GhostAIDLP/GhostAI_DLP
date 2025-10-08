@@ -223,4 +223,5 @@ scripts/
 
 # OS files
 .DS_Store
-Thumbs.db
+Thumbs.dbvenv_clean/
+venv_stable/

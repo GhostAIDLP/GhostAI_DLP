@@ -6,6 +6,7 @@ from ghostai.scanners.presidio_scanner import PresidioScanner
 from ghostai.scanners.trufflehog_scanner import TrufflehogScanner
 from ghostai.scanners.prompt_guard2_scanner import PromptGuard2Scanner
 from ghostai.scanners.gitleaks_scanner import GitleaksScanner
+from ghostai.scanners.regex_secrets_scanner import RegexSecretsScanner
 
 # dynamically compute config path based on THIS file’s position
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
@@ -38,6 +39,8 @@ class Pipeline:
             self.scanners.append(GitleaksScanner())
         if cfg.get("promptguard2", {}).get("enabled", False):
             self.scanners.append(PromptGuard2Scanner(threshold=cfg["promptguard2"].get("threshold", 0.8)))
+        if cfg.get("regex_secrets", {}).get("enabled", False):
+            self.scanners.append(RegexSecretsScanner())
 
     def run(self, text: str):
         if not self.scanners:

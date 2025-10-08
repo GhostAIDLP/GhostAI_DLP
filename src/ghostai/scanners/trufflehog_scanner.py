@@ -4,7 +4,12 @@ from .base import BaseScanner, ScanResult
 
 class TrufflehogScanner(BaseScanner):
     def _run_trufflehog(self, text: str):
-        return subprocess.run([...], input=text.encode("utf-8"), capture_output=True, check=False)
+        return subprocess.run(
+            ["trufflehog", "detect", "--no-git", "--format=json", "--stdin"],
+            input=text.encode("utf-8"),
+            capture_output=True,
+            check=False
+        )
     def scan(self, text: str) -> ScanResult:
         """
         Run TruffleHog regex mode against input text.

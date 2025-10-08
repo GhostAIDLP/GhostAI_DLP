@@ -1,62 +1,66 @@
-from flask import Flask, request, jsonify
-import requests, os
+# src/ghostai/proxy_api/proxy.py
 
+from flask import Flask, request, jsonify
+import requests, os, logging
 from ghostai.pipeline.pipeline import Pipeline
 
-app = Flask(__name__)
 
-# Point this at OpenAI or Anthropic
-OPENAI_API_BASE = "https://api.openai.com/v1"
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+class GhostAIProxy:
+    def __init__(self, api_base=None, api_key=None, config_path=None):
+        self.app = Flask(__name__)
+        self.api_base = api_base or "https://api.openai.com/v1"
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
 
-# 🔧 Init pipeline with rules-as-code config
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CONFIG_PATH = os.path.join(BASE_DIR, "config", "scanners.yaml")
-pipeline = Pipeline(config_path=CONFIG_PATH)
+        # resolve config file path
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        config_path = config_path or os.path.join(base_dir, "config", "scanners.yaml")
 
-@app.route("/v1/chat/completions", methods=["POST"])
-def proxy_chat():
-    body = request.get_json()
+        self.pipeline = Pipeline(config_path=config_path)
+        self._register_routes()
 
-    if "messages" in body:
-        for msg in body["messages"]:
-            if msg.get("role") == "user":
-                text = msg["content"]
+    def _register_routes(self):
+        @self.app.route("/v1/chat/completions", methods=["POST"])
+        def proxy_chat():
+            body = request.get_json()
 
-                # 🚦 Run pipeline on user input
-                res = pipeline.run(text)
+            # 🔍 run DLP scans
+            if "messages" in body:
+                for msg in body["messages"]:
+                    if msg.get("role") == "user":
+                        text = msg["content"]
+                        res = self.pipeline.run(text)
 
-                # 🔁 Look for any scanner-provided replacement text
-                for b in res["breakdown"]:
-                    extra = b.get("extra", {})
-                    if "anonymized" in extra:
-                        text = extra["anonymized"]
-                    elif "redacted" in extra:
-                        text = extra["redacted"]
+                        # modify text if redacted/anonymized
+                        for b in res["breakdown"]:
+                            extra = b.get("extra", {})
+                            if "anonymized" in extra:
+                                text = extra["anonymized"]
+                            elif "redacted" in extra:
+                                text = extra["redacted"]
 
-                # 🪵 Log flags for observability
-                if res["flags"]:
-                    app.logger.warning(
-                        f"[PIPELINE] Flags={res['flags']} | "
-                        f"Score={res['score']} | Breakdown={res['breakdown']}"
-                    )
+                        if res["flags"]:
+                            logging.warning(
+                                f"[PIPELINE] Flags={res['flags']} | Score={res['score']} | Breakdown={res['breakdown']}"
+                            )
 
-                # Replace message content with possibly modified text
-                msg["content"] = text
+                        msg["content"] = text
 
-    headers = {
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
-        "Content-Type": "application/json"
-    }
+            # 🚀 forward to OpenAI
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            }
+            resp = requests.post(
+                f"{self.api_base}/chat/completions",
+                headers=headers,
+                json=body,
+                timeout=30,
+            )
+            return jsonify(resp.json()), resp.status_code
 
-    resp = requests.post(
-        f"{OPENAI_API_BASE}/chat/completions",
-        headers=headers,
-        json=body,
-        timeout=30
-    )
-    return jsonify(resp.json()), resp.status_code
+    def run(self, host="0.0.0.0", port=5000, debug=True):
+        self.app.run(host=host, port=port, debug=debug)
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    GhostAIProxy().run()

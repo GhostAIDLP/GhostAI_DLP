@@ -1,151 +1,114 @@
-# GhostAI_DLP 🕵️‍♂️🔐
+# GhostAI DLP SDK 🕵️‍♂️🔐
 
-A developer-first Data Loss Prevention (DLP) tool for detecting risky patterns in code.
-Built with Flask + Python CLI.
+A unified Data Loss Prevention (DLP) and GenAI Security Scanning Pipeline for Apple Silicon (arm64).
 
----
-
-## Roadmap
-
-* [x] CLI-based detection engine (secrets, blobs, entropy)
-* [ ] Pre-commit + GitHub CI integration
-* [ ] AI post-processing filter to reduce false positives
-* [ ] SaaS dashboard for org-wide reporting
-
----
-
-## CLI Usage (Important!)
-
-The CLI lives under `src/cli/`.
-Because this project uses packages (`src/`), you must run the CLI with Python’s module flag (`-m`) from the project root.
-
-### Interactive Mode
-
-Run:
-
-```bash
-python3 -m src.cli.cli
-```
-
-Example session:
-
-```bash
-Enter a code prompt (or type 'exit' to quit): // detector test: obvious AWS creds (FAKE ONLY)
-Enter the next line (or press Enter to submit): const AWS = require('aws-sdk');
-...
-
-{
-    "score": 0.98,
-    "severity": "high",
-    "breakdown": [
-        { "name": "secrets", "score": 0.9, "reasons": ["aws_access_key detected"] },
-        { "name": "keywords", "score": 0.6, "reasons": ["keyword_secret detected"] }
-    ]
-}
-```
-
-The CLI sends the snippet to the Flask API and prints a JSON result with:
-
-* score
-* severity
-* breakdown of detectors triggered
-
----
-
-## Setup & Running Flask
+## Quick Start (Apple Silicon)
 
 ### 1. Prerequisites
 
-Make sure you have Python 3.x installed:
+- Python 3.12+ (recommended for Apple Silicon)
+- macOS with Apple Silicon (M1/M2/M3)
+
+### 2. Setup
 
 ```bash
-python3 --version
+# Create virtual environment
+python3.12 -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Upgrade pip and install dependencies
+pip install -U pip wheel setuptools
+pip install -e .
+
+# Or use the Makefile
+make setup
 ```
 
-If you don’t have Python installed, download it from [python.org/downloads](https://www.python.org/downloads).
-
-Also ensure pip (Python’s package manager) is installed:
+### 3. CLI Usage
 
 ```bash
-pip --version
+# Scan text directly
+python -m ghostai "My SSN is 123-45-6789"
+
+# Interactive mode
+python -m ghostai
 ```
 
-### 2. Install Virtual Environment
+### 4. Proxy Server
 
 ```bash
-pip install virtualenv
+# Start the proxy server (requires OPENAI_API_KEY)
+export OPENAI_API_KEY=your_key_here
+python -m ghostai.proxy_api.proxy
+
+# Or use the Makefile
+make proxy
 ```
 
-### 3. Create a Virtual Environment
+### 5. Test the Proxy
 
 ```bash
-python3 -m venv .venv
+curl -X POST http://localhost:5000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"messages":[{"role":"user","content":"my aws key is AKIA123..."}]}'
 ```
 
-This will create a folder named `.venv/` that contains your isolated environment.
+## Features
 
-### 4. Activate the Virtual Environment
+- **CLI Interface**: Direct text scanning with `python -m ghostai`
+- **Proxy Server**: OpenAI-compatible API with DLP scanning
+- **Multiple Scanners**: Presidio (PII), PromptGuard2 (injection), TruffleHog, GitLeaks
+- **Apple Silicon Optimized**: All dependencies tested on arm64
+- **Editable Install**: Development-friendly with `pip install -e .`
 
-**macOS / Linux**
+## API Reference
+
+### Pipeline
+
+```python
+from ghostai import Pipeline
+
+pipeline = Pipeline()
+result = pipeline.run("My SSN is 123-45-6789")
+print(result)
+# {
+#   "score": 1.0,
+#   "flags": ["presidio"],
+#   "breakdown": [...]
+# }
+```
+
+### GhostAIProxy
+
+```python
+from ghostai import GhostAIProxy
+
+proxy = GhostAIProxy()
+proxy.run(port=5000)
+```
+
+## Testing
 
 ```bash
-source .venv/bin/activate
+# Run all tests
+make test
+
+# Or directly
+python -m pytest tests/ -v
 ```
-
-**Windows (PowerShell)**
-
-```bash
-.venv\Scripts\activate
-```
-
-When activated, you’ll see `(.venv)` in your terminal prompt.
-To deactivate at any time:
-
-```bash
-deactivate
-```
-
-### 5. Install Dependencies
-
-With the environment activated:
-
-```bash
-pip install -r requirements.txt
-```
-
-### 6. Run the Flask API
-
-From the project root:
-
-```bash
-flask --app src/api/routers/risk run
-```
-
-Flask will run at:
-
-[http://127.0.0.1:5000](http://127.0.0.1:5000)
-
-### 7. Deactivate the Virtual Environment
-
-When finished:
-
-```bash
-deactivate
-```
-
----
 
 ## Troubleshooting
 
-**Error:** `ModuleNotFoundError: No module named 'src'`
-**Fix:** Always run with `-m`:
+**Import Error**: Make sure you're in the project root and have activated the virtual environment.
 
+**Port 5000 in use**: macOS AirPlay uses port 5000. Use a different port:
 ```bash
-python3 -m src.cli.cli
+python -c "from ghostai.proxy_api.proxy import GhostAIProxy; GhostAIProxy().run(port=5001)"
 ```
 
-**Warning:** `NotOpenSSLWarning from urllib3`
-This is non-blocking — safe to ignore in development.
+**Missing dependencies**: Ensure you're using Python 3.12+ and have installed with `pip install -e .`
 
 ---
 
