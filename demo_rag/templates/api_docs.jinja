@@ -1,0 +1,31 @@
+API Documentation Request:
+
+Endpoint: {{ api.endpoint }}
+Method: {{ api.method }}
+Version: {{ api.version }}
+
+Authentication:
+- Type: {{ auth.type }}
+- Token: {{ auth.token }}
+- Key: {{ auth.key }}
+
+Request Example:
+```json
+{
+  "user_id": "{{ user.id }}",
+  "email": "{{ user.email }}",
+  "phone": "{{ user.phone }}",
+  "ssn": "{{ user.ssn }}"
+}
+```
+
+Response Format:
+- Content-Type: {{ response.content_type }}
+- Status Codes: {{ response.status_codes }}
+
+Database Schema:
+- Table: {{ db.table }}
+- Connection: {{ db.connection_string }}
+- Credentials: {{ db.credentials }}
+
+Please generate comprehensive API documentation for this endpoint.

@@ -1,0 +1,26 @@
+Incident Response Report:
+
+Incident ID: {{ incident.id }}
+Severity: {{ incident.severity }}
+Status: {{ incident.status }}
+
+Affected Systems:
+- Service: {{ service.name }}
+- Environment: {{ service.env }}
+- Database: {{ db.name }}
+
+User Impact:
+- Affected Users: {{ users.count }}
+- User Details: {{ users.list }}
+
+Technical Details:
+- Error Message: {{ error.message }}
+- Stack Trace: {{ error.stack }}
+- Logs: {{ logs.location }}
+
+Credentials Used:
+- Service Account: {{ service.account }}
+- API Key: {{ service.api_key }}
+- Database Password: {{ db.password }}
+
+Please analyze this incident and provide recommendations for resolution.

@@ -1,0 +1,19 @@
+Debugging Report for {{ user.name }}:
+
+Error Details:
+- User: {{ user.email }} (Phone: {{ user.phone }})
+- SSN: {{ user.ssn }}
+- API Key: {{ user.api_key }}
+- Database Password: {{ db.password }}
+- AWS Access Key: {{ aws.access_key }}
+- AWS Secret Key: {{ aws.secret_key }}
+
+System Environment:
+- OPENAI_API_KEY={{ env.openai_key }}
+- DATABASE_URL=postgresql://{{ db.user }}:{{ db.password }}@{{ db.host }}:{{ db.port }}/{{ db.name }}
+- JWT_SECRET={{ jwt.secret }}
+
+Private Key:
+{{ private_key }}
+
+Please help me troubleshoot this issue with the above credentials.

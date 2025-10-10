@@ -1,0 +1,33 @@
+Customer Support Ticket:
+
+Ticket ID: {{ ticket.id }}
+Priority: {{ ticket.priority }}
+Status: {{ ticket.status }}
+
+Customer Information:
+- Name: {{ customer.name }}
+- Email: {{ customer.email }}
+- Phone: {{ customer.phone }}
+- SSN: {{ customer.ssn }}
+- Account ID: {{ customer.account_id }}
+
+Issue Description:
+{{ issue.description }}
+
+Technical Context:
+- Service: {{ service.name }}
+- Environment: {{ service.env }}
+- Database: {{ db.name }}
+- API Key: {{ service.api_key }}
+
+System Logs:
+- Error: {{ logs.error }}
+- Stack Trace: {{ logs.stack }}
+- User Agent: {{ logs.user_agent }}
+
+Configuration:
+- Database URL: {{ db.url }}
+- Redis Password: {{ redis.password }}
+- JWT Secret: {{ jwt.secret }}
+
+Please help resolve this customer issue with the above information.
