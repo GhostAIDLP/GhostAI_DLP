@@ -48,7 +48,6 @@ RUN pip install --upgrade pip wheel setuptools && \
 
 # Copy source code
 COPY src/ ./src/
-COPY demo_rag/ ./demo_rag/
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash ghostai && \
