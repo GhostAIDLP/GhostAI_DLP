@@ -22,13 +22,23 @@ class GhostAIProxy:
         @self.app.route("/v1/chat/completions", methods=["POST"])
         def proxy_chat():
             body = request.get_json()
+            
+            # Extract session information for logging
+            session_id = request.headers.get('X-Session-ID', 'proxy-session')
+            user_agent = request.headers.get('User-Agent', 'unknown')
+            ip_address = request.remote_addr
 
             # 🔍 run DLP scans
             if "messages" in body:
                 for msg in body["messages"]:
                     if msg.get("role") == "user":
                         text = msg["content"]
-                        res = self.pipeline.run(text)
+                        res = self.pipeline.run(
+                            text, 
+                            session_id=session_id,
+                            user_agent=user_agent,
+                            ip_address=ip_address
+                        )
 
                         # modify text if redacted/anonymized
                         for b in res["breakdown"]:
