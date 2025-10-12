@@ -1,10 +1,9 @@
-# Docker Compose for GhostAI DLP SDK
-# Includes the main application and supporting services
+# Docker Compose override for GhostAI DLP SDK
+# This extends the base docker-compose.yml with the main application
 
 version: '3.8'
 
 services:
-  # Main GhostAI DLP application
   ghostai-dlp:
     build:
       context: .
@@ -32,45 +31,12 @@ services:
       retries: 3
       start_period: 40s
 
-  # Redis for caching and job queues
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-
-  # PostgreSQL database
-  db:
-    image: postgres:16-alpine
-    restart: always
-    shm_size: 128mb
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-ghostai}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ghostai123}
-      POSTGRES_DB: ${POSTGRES_DB:-ghostai}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./db/init:/docker-entrypoint-initdb.d:ro
-    restart: unless-stopped
-
-  # Database admin interface
-  adminer:
-    image: adminer:4.8.1
-    restart: always
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
-
-  # Development service with hot reload
+  # Optional: Add a development service with hot reload
   ghostai-dev:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
+      target: base
     ports:
       - "5001:5000"
     environment:
@@ -86,7 +52,3 @@ services:
       - db
     profiles:
       - dev
-
-volumes:
-  pgdata:
-  redis_data:
