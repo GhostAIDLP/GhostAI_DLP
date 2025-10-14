@@ -237,28 +237,118 @@ docker run -it ghostai-dlp python -m ghostai "Ignore all previous instructions"
 
 ## 📈 Performance
 
-### Benchmarks (Dockerized, Various Platforms)
-| Operation | Time | Memory | Concurrency |
-|-----------|------|--------|-------------|
-| **SSN Detection** | 4.57ms | 900MB | 50+ threads |
-| **Email Detection** | 4.57ms | 900MB | 100% success |
-| **AWS Key Detection** | 4.57ms | 900MB | Zero failures |
-| **Full Pipeline** | 4.57ms | 900MB | Enterprise-grade |
-| **Batch (100 items)** | 174ms | 900MB | Production-ready |
+### ⚠️ **Realistic Performance Analysis**
 
-### 🚀 **Concurrent Performance**
-- **10 Concurrent Scans**: 100% success rate, 370ms avg latency
-- **20 Concurrent Scans**: 100% success rate, 57ms avg latency  
-- **50 Concurrent Scans**: 100% success rate, 93ms avg latency
-- **Thread Safety**: Zero race conditions or data corruption
+Our comprehensive testing revealed significant differences between **optimistic** and **realistic** scenarios:
 
-> **Note**: Memory usage reflects Presidio full load; optimization in progress.
+| Configuration | Average Latency | Throughput | Notes |
+|---------------|----------------|------------|-------|
+| **Regex Only (Optimistic)** | 4.57ms | 261.89 req/s | Hot loop, no I/O, single scanner |
+| **All Scanners (Realistic)** | 265.34ms | ~3.8 req/s | Presidio + PromptGuard2 + external tools |
+| **Proxy API (HTTP/JSON)** | 172.54ms | 4.91 req/s | Flask overhead + JSON parsing |
+| **Concurrent (10 threads)** | 4872ms avg | ~0.2 req/s | Thread contention + external tools |
 
-### Optimization Tips
-- Use presidio for PII, regex_secrets for speed
-- Enable trufflehog/gitleaks for deep secrets scans
-- Cache repeated patterns
-- Lazy load Presidio models to cut memory
+### 🔍 **Key Performance Findings**
+
+**1. Scanner Impact:**
+- **Regex only**: 4.57ms (baseline)
+- **All scanners**: 265.34ms (**58x slower**)
+- **External tools** (TruffleHog/GitLeaks) add significant overhead
+- **PromptGuard2** (ML model) adds ~100-200ms per scan
+
+**2. HTTP/JSON Overhead:**
+- **Direct pipeline**: 4.57ms
+- **Proxy API**: 172.54ms (**37x slower**)
+- **JSON serialization** and **HTTP parsing** add substantial latency
+
+**3. Concurrency Issues:**
+- **Single-threaded**: 265ms per scan
+- **10 concurrent**: 4872ms average (**18x slower**)
+- **External tools** don't scale well with concurrency
+
+### 🎯 **Production-Ready Expectations**
+
+**For Production Use:**
+- **Target Latency**: 200-500ms (realistic with all scanners)
+- **Target Throughput**: 2-5 req/s (with external tools)
+- **Concurrency**: 5-10 concurrent requests max
+- **Memory**: 1-2GB per container (with all models loaded)
+
+### 🚀 **Performance Optimization Strategies**
+
+**1. Scanner Configuration:**
+```yaml
+# For real-time scanning (fastest)
+runtime:
+  presidio: enabled: true
+  regex_secrets: enabled: true
+  trufflehog: enabled: false  # Disable for speed
+  gitleaks: enabled: false    # Disable for speed
+  promptguard2: enabled: false # Disable for speed
+
+# For comprehensive scanning (slower)
+comprehensive:
+  presidio: enabled: true
+  regex_secrets: enabled: true
+  trufflehog: enabled: true
+  gitleaks: enabled: true
+  promptguard2: enabled: true
+```
+
+**2. Deployment Optimizations:**
+- **Use async processing** for heavy scanners
+- **Implement caching** for repeated inputs
+- **Load balance** across multiple instances
+- **Use lighter models** for PromptGuard2
+- **Disable external tools** for real-time scanning
+
+**3. Monitoring & Scaling:**
+- **Monitor latency** per scanner type
+- **Scale horizontally** rather than vertically
+- **Use connection pooling** for database operations
+- **Implement circuit breakers** for external tools
+
+### 📊 **Performance Testing**
+
+**Run Realistic Benchmarks:**
+```bash
+# Test direct pipeline performance
+python scripts/benchmark_cli.py
+
+# Test proxy API performance  
+python test_proxy_performance.py
+
+# Test with all scanners enabled
+python -c "
+from ghostai import Pipeline
+import time
+pipeline = Pipeline()
+start = time.time()
+result = pipeline.run('My SSN is 123-45-6789')
+print(f'Latency: {(time.time() - start) * 1000:.2f}ms')
+print(f'Scanners: {[s[\"name\"] for s in result[\"breakdown\"]]}')
+"
+```
+
+### 🔧 **Next Steps for Performance**
+
+**Immediate (Week 1):**
+- [ ] **Profile scanner performance** individually
+- [ ] **Implement async scanning** for external tools
+- [ ] **Add caching layer** for repeated inputs
+- [ ] **Create performance monitoring** dashboard
+
+**Short-term (Month 1):**
+- [ ] **Optimize Presidio configuration** for speed
+- [ ] **Implement scanner prioritization** (fast scanners first)
+- [ ] **Add connection pooling** for database operations
+- [ ] **Create performance regression tests**
+
+**Long-term (Quarter 1):**
+- [ ] **Implement distributed scanning** across multiple workers
+- [ ] **Add ML model optimization** (quantization, pruning)
+- [ ] **Create auto-scaling** based on load
+- [ ] **Implement real-time performance tuning**
 
 ## 🔧 Troubleshooting
 

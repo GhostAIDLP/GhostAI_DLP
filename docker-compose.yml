@@ -45,7 +45,7 @@ services:
   # PostgreSQL database
   db:
     image: postgres:16-alpine
-    restart: always
+    restart: unless-stopped
     shm_size: 128mb
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-ghostai}
@@ -56,7 +56,6 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d:ro
-    restart: unless-stopped
 
   # Database admin interface
   adminer:

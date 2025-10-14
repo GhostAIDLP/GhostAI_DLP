@@ -4,11 +4,11 @@ profiles:
       enabled: true
       anonymize: true
     trufflehog:
-      enabled: false
+      enabled: true
     gitleaks:
-      enabled: false
+      enabled: true
     promptguard2:
-      enabled: false
+      enabled: true
       threshold: 0.85
     regex_secrets:
       enabled: true
