@@ -9,7 +9,7 @@ from ghostai.scanners.trufflehog_scanner import TrufflehogScanner
 from ghostai.scanners.prompt_guard2_scanner import PromptGuard2Scanner
 from ghostai.scanners.gitleaks_scanner import GitleaksScanner
 from ghostai.scanners.regex_secrets_scanner import RegexSecretsScanner
-from ghostai.database_logger import get_database_logger
+from ghostai.database_logger_sqlite import get_database_logger
 
 # dynamically compute config path based on THIS file’s position
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))

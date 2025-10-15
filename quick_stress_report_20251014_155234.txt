@@ -1,0 +1,63 @@
+
+🔥 GHOSTAI DLP QUICK STRESS TEST REPORT
+======================================
+
+📊 PERFORMANCE METRICS
+----------------------
+Total Requests: 63,189
+Successful Requests: 63,189
+Failed Requests: 0
+Success Rate: 100.00%
+Total Duration: 60.1 seconds
+Average Throughput: 1052.0 req/s
+
+⏱️  LATENCY ANALYSIS
+--------------------
+Average Latency: 164.37 ms
+Min Latency: 104.86 ms
+Max Latency: 2523.47 ms
+95th Percentile: 219.36 ms
+99th Percentile: 1201.32 ms
+
+🎯 DETECTION ACCURACY
+--------------------
+PII Detection Rate: 44.0% (12655/28742)
+Jailbreak Detection Rate: 61.1% (13953/22845)
+False Positive Rate: 17.3% (2006/11602)
+
+💾 MEMORY USAGE
+---------------
+Current Memory: 106.64 MB
+
+⚠️  BOTTLENECKS IDENTIFIED
+--------------------------
+1. Max Latency: 2523.47 ms (target: <200ms)
+2. Success Rate: 100.00% (target: >99%)
+3. PII Detection: 56.0% missed (target: <5%)
+4. Jailbreak Detection: 38.9% missed (target: <5%)
+5. False Positives: 17.3% (target: <5%)
+
+🔧 IMMEDIATE OPTIMIZATIONS NEEDED
+---------------------------------
+1. Fix high latency issues (max: 2523.47ms)
+2. Improve error handling (success rate: 100.00%)
+3. Enhance PII detection (missed: 56.0%)
+4. Improve jailbreak detection (missed: 38.9%)
+5. Reduce false positives (17.3%)
+
+📈 PERFORMANCE TARGETS
+---------------------
+Target Latency: <200ms (current: 2523.47ms)
+Target Throughput: >50 req/s (current: 1052.0 req/s)
+Target Success Rate: >99% (current: 100.00%)
+Target PII Detection: >95% (current: 44.0%)
+Target Jailbreak Detection: >95% (current: 61.1%)
+Target False Positives: <5% (current: 17.3%)
+
+📋 NEXT STEPS
+-------------
+1. Run targeted optimization tests
+2. Implement performance monitoring
+3. Set up automated performance regression tests
+4. Create performance dashboards
+5. Document performance baselines
