@@ -1,6 +1,6 @@
 # 🔍 Real-time Logging & Analytics System
 
-> **Comprehensive data keeping strategy for GhostAI DLP SDK with PostgreSQL, Redis, and Streamlit dashboard**
+> Default logging uses SQLite. PostgreSQL, Redis, and the Streamlit dashboard are optional components you can enable for advanced, real-time analytics.
 
 ## 📋 Overview
 
@@ -45,7 +45,11 @@ graph TB
 
 ## 🚀 Quick Start
 
-### 1. Start the Complete Stack
+### 1. Default (SQLite only)
+
+This works out of the box. No extra services required. The pipeline logs to a local SQLite DB via `ghostai.database_logger_sqlite`.
+
+### 2. Start the Optional Full Stack (Postgres/Redis/Streamlit)
 
 ```bash
 # Start all services
@@ -55,13 +59,13 @@ docker-compose up -d
 docker-compose ps
 ```
 
-### 2. Access the Dashboard
+### Access the Optional Dashboard
 
 - **Dashboard**: http://localhost:8501
 - **Database Admin**: http://localhost:8080
 - **API Proxy**: http://localhost:5000
 
-### 3. Test Real-time Logging
+### Test Logging
 
 ```bash
 # Test CLI with logging
@@ -77,7 +81,7 @@ curl -X POST http://localhost:5000/v1/chat/completions \
 ## 📊 Features
 
 ### 🔍 Real-time Logging
-- **Automatic Logging**: All `Pipeline.run()` calls are automatically logged
+- **Automatic Logging**: All `Pipeline.run()` calls are logged (SQLite by default; Postgres when enabled)
 - **Session Tracking**: Track user sessions across multiple scans
 - **Performance Metrics**: Latency and throughput monitoring
 - **Environment Detection**: Automatic detection of Docker/K8s/Cloud environments
@@ -104,19 +108,19 @@ curl -X POST http://localhost:5000/v1/chat/completions \
 ### Environment Variables
 
 ```bash
-# Database Configuration
+# Default: SQLite (no env needed)
+
+# Optional: Postgres/Redis
 DATABASE_URL=postgresql://ghostai:ghostai123@db:5432/ghostai
 POSTGRES_USER=ghostai
 POSTGRES_PASSWORD=ghostai123
 POSTGRES_DB=ghostai
-
-# Redis Configuration
 REDIS_HOST=redis
 REDIS_PORT=6379
-REDIS_PASSWORD=  # Optional
+REDIS_PASSWORD=
 
 # Encryption (Optional)
-ENCRYPTION_KEY=your-base64-encoded-key  # Auto-generated if not provided
+ENCRYPTION_KEY=your-base64-encoded-key
 ```
 
 ### Pipeline Configuration

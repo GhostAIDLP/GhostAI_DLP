@@ -78,7 +78,7 @@ POSTGRES_PORT=5432                  # Database port
 ```
 
 ### Scanner Configuration
-The SDK uses `src/ghostai/config/scanners.yaml` to configure which scanners are enabled:
+The SDK uses `src/ghostai/config/scanners.yaml` to configure which scanners are enabled. Current defaults in code:
 
 ```yaml
 profiles:
@@ -89,12 +89,17 @@ profiles:
     regex_secrets:
       enabled: true
     trufflehog:
-      enabled: false  # Requires external binary
+      enabled: true   # Requires external binary in container or host
     gitleaks:
-      enabled: false  # Requires external binary
+      enabled: true   # Requires external binary in container or host
     promptguard2:
-      enabled: false  # Requires HF_TOKEN
+      enabled: true   # Requires HF_TOKEN and sufficient credits
+      threshold: 0.85
 ```
+
+Notes:
+- If `trufflehog`/`gitleaks` aren't available in the image/host PATH, those scanners will return non-fatal errors in the breakdown.
+- If `HF_TOKEN` is unset or quota is exceeded, PromptGuard2 returns a non-fatal error in the breakdown.
 
 ## 🧪 Testing the Deployment
 
@@ -112,12 +117,7 @@ docker-compose logs ghostai-dlp
 # Test the CLI inside the container
 docker-compose exec ghostai-dlp python -m ghostai "My SSN is 123-45-6789"
 
-# Expected output:
-# {
-#   "score": 1.0,
-#   "flags": ["presidio", "regex_secrets"],
-#   "breakdown": [...]
-# }
+# Expected: regex_secrets will flag; Presidio may flag; external scanners may error if binaries missing; PromptGuard2 needs HF_TOKEN/credits
 ```
 
 ### 3. API Testing

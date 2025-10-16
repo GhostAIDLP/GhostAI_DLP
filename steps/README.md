@@ -1,4 +1,11 @@
 
+Next Steps
+
+Add Algorithmic Red Teaming using Garak to use probes and 
+
+Added DB and logging now and dockerized to allow friendly deployments to cloud as well as stress testing and covertage metrics
+
+
 Now we are on the place where we have a prompt scanner working so thats good, however now thinking about making this demoable,
 and getting a genuine product out, currently we are working on wrapping this as an sdk and now we gotta conduct alot of user interviews
 
