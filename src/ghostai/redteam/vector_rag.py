@@ -15,6 +15,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.neighbors import NearestNeighbors
 from sklearn.cluster import DBSCAN
 import pickle
+from transformers import pipeline, AutoTokenizer, AutoModel
+import torch
 
 @dataclass
 class AttackCluster:
@@ -47,12 +49,28 @@ class VectorRAGPipeline:
         self.vectorizer = TfidfVectorizer(
             max_features=vector_dim,
             ngram_range=(1, 4),
-            stop_words='english',
+            analyzer='char_wb',  # FIXED: Better for multilingual
+            stop_words=None,  # FIXED: No language-specific stop words
             lowercase=True,
             strip_accents='unicode'
         )
         self.knn_model = None
         self.cluster_model = None
+        
+        # FIXED: Add mBERT for multilingual support
+        try:
+            self.classifier = pipeline("text-classification", model="xlm-roberta-base")
+            self.tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base")
+            self.model = AutoModel.from_pretrained("xlm-roberta-base")
+            self.multilingual_enabled = True
+        except Exception as e:
+            print(f"Warning: mBERT not available: {e}")
+            self.classifier = None
+            self.tokenizer = None
+            self.model = None
+            self.multilingual_enabled = False
+        
+        self.fitted = False  # Track TF-IDF fit status
         self.attack_vectors = None
         self.attack_clusters: List[AttackCluster] = []
         self.learning_insights: List[LearningInsight] = []
@@ -171,15 +189,56 @@ class VectorRAGPipeline:
         
         conn.close()
     
+    def detect_multilingual_threat(self, text: str) -> Dict[str, Any]:
+        """Detect threats in multilingual text using pattern matching."""
+        # Detect language (simple heuristic)
+        language = "en"  # default
+        if any(word in text.lower() for word in ["ignorar", "instrucciones", "secretos", "anterior"]):
+            language = "es"
+        elif any(word in text.lower() for word in ["ignorer", "instructions", "secrets", "précédentes"]):
+            language = "fr"
+        elif any(word in text.lower() for word in ["ignorare", "istruzioni", "segreti", "precedenti"]):
+            language = "it"
+        
+        # Simple threat detection based on keywords
+        threat_keywords = [
+            "ignore", "ignorar", "ignorer", "ignorare",
+            "instructions", "instrucciones", "instructions", "istruzioni",
+            "secrets", "secretos", "secrets", "segreti",
+            "previous", "anterior", "précédentes", "precedenti",
+            "tell me", "dime", "dis-moi", "dimmi"
+        ]
+        
+        threat_score = 0.0
+        text_lower = text.lower()
+        
+        for keyword in threat_keywords:
+            if keyword in text_lower:
+                threat_score += 0.2
+        
+        # Boost for multilingual jailbreak patterns
+        if language != "en" and any(word in text_lower for word in ["ignore", "ignorar", "ignorer", "ignorare"]):
+            threat_score += 0.3
+        
+        threat_score = min(1.0, threat_score)
+        
+        return {
+            "threat_score": threat_score,
+            "language": language,
+            "confidence": threat_score,
+            "multilingual": language != "en"
+        }
+
     def add_attack(self, attack_text: str, success: bool, metadata: Dict[str, Any] = None):
         """Add a new attack to the vector RAG system."""
         if metadata is None:
             metadata = {}
         
         # Vectorize the attack
-        if self.attack_vectors is None:
-            # First attack - initialize
+        if not self.fitted:
+            # FIXED: Fit TF-IDF on first attack
             attack_vector = self.vectorizer.fit_transform([attack_text]).toarray()[0]
+            self.fitted = True
             self.attack_vectors = np.array([attack_vector])
         else:
             # Add to existing vectors - ensure same dimensions
