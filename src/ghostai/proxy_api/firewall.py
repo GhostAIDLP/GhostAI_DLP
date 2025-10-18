@@ -277,9 +277,9 @@ class GhostAIFirewall:
                         if msg.get("role") == "user":
                             request_content += msg.get("content", "")
                 
-                # Create hash based on content + IP + timestamp (rounded to 30-second intervals)
+                # Create hash based on content + IP + timestamp (rounded to 5-second intervals)
                 current_time = time.time()
-                time_window = int(current_time // 30) * 30  # 30-second windows
+                time_window = int(current_time // 5) * 5  # 5-second windows
                 duplicate_key = f"{ip_address}:{hashlib.md5(request_content.encode()).hexdigest()}:{time_window}"
                 
                 # Clean old entries (older than 1 minute)

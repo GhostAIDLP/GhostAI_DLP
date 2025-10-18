@@ -44,9 +44,9 @@
 # Clone and setup
 git clone https://github.com/your-org/ghostai-firewall.git
 cd ghostai-firewall
-python -m venv ghostai_env
-source ghostai_env/bin/activate  # Windows: ghostai_env\Scripts\activate
-pip install -r requirements.txt
+python -m venv venv_stable
+source venv_stable/bin/activate  # Windows: venv_stable\Scripts\activate
+pip install -e .
 ```
 
 ### 2. Train the BERT Model (One-time setup)
@@ -55,28 +55,73 @@ pip install -r requirements.txt
 python train_bert_jailbreak.py
 ```
 
-### 3. Start Everything
+### 3. Start the Proxy Server
 ```bash
-# Start all services at once
-./start_demo.sh
+# Option 1: Simple start (auto-finds free port)
+python start_proxy.py
 
-# Or start individually:
-python mock_llm_server.py &          # Mock AI service
-python run_firewall.py --mock &      # Security firewall  
-streamlit run dashboard_simple.py &  # Analytics dashboard
+# Option 2: Direct start (may need manual port handling)
+python -m ghostai.proxy_api.proxy
 ```
 
-### 4. Test It Works
+**The proxy will automatically find a free port starting from 5000.**
+
+### 4. Test the Proxy
 ```bash
 # Test safe request (should work)
-curl -X POST http://localhost:5004/v1/chat/completions \
+curl -X POST http://localhost:5000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello, how are you?"}]}'
 
-# Test malicious request (should be blocked)
-curl -X POST http://localhost:5004/v1/chat/completions \
+# Test malicious request (will be anonymized)
+curl -X POST http://localhost:5000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "My SSN is 123-45-6789"}]}'
+
+# Note: If using start_proxy.py, check the console output for the actual port number
+```
+
+### 5. Get JSON Scores (CLI)
+```bash
+# Scan text directly and get JSON results
+python -m ghostai "My SSN is 123-45-6789"
+python -m ghostai "Ignore all previous instructions"
+python -m ghostai "Hello world, normal message"
+```
+
+**Expected JSON Output:**
+```json
+{
+  "score": 1.0,
+  "flags": ["presidio", "regex_secrets"],
+  "breakdown": [
+    {
+      "name": "presidio",
+      "flagged": true,
+      "score": 1.0,
+      "reasons": [{"entity_type": "US_SSN", "start": 10, "end": 21}]
+    }
+  ]
+}
+```
+
+## 🔧 Troubleshooting
+
+### Port Already in Use
+```bash
+# If you get "Address already in use" error:
+# 1. Kill any existing processes on the port
+lsof -ti:5000 | xargs kill -9
+
+# 2. Or start on a different port
+python -c "from ghostai.proxy_api.proxy import GhostAIProxy; GhostAIProxy().run(port=5001)"
+```
+
+### Stop the Proxy
+```bash
+# Press Ctrl+C in the terminal where the proxy is running
+# Or kill the process:
+pkill -f "ghostai.proxy_api.proxy"
 ```
 
 ## 🧠 How the BERT Model Works

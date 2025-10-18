@@ -27,32 +27,56 @@ class PresidioScanner(BaseScanner):
         """
         Run Presidio detection and optional anonymization.
         Returns flagged=True if PII entities detected.
-        Filters out image URLs to reduce false positives.
+        Filters out image URLs and common false positives to reduce false positives.
         """
         try:
             results = self.analyzer.analyze(text=text, language=self.language)
 
             if results:
-                # Filter out image URLs and safe domains to reduce false positives
+                # Filter out image URLs, safe domains, and common false positives
                 filtered_results = []
                 for result in results:
+                    # Extract the detected text
+                    detected_text = text[result.start:result.end].lower().strip()
+                    
                     # Check if this is a URL entity
                     if result.entity_type == "URL":
-                        # Extract the URL text
-                        url_text = text[result.start:result.end].lower()
-                        
                         # Check if it's an image URL
-                        is_image_url = any(ext in url_text for ext in self.image_extensions)
+                        is_image_url = any(ext in detected_text for ext in self.image_extensions)
                         
                         # Check if it's a safe domain
-                        is_safe_domain = any(domain in url_text for domain in self.safe_domains)
+                        is_safe_domain = any(domain in detected_text for domain in self.safe_domains)
                         
                         # Only include non-image URLs and non-safe domains
                         if not is_image_url and not is_safe_domain:
                             filtered_results.append(result)
+                    elif result.entity_type == "DATE_TIME":
+                        # Filter out common date/time words that are not actually PII
+                        common_time_words = [
+                            'today', 'yesterday', 'tomorrow', 'now', 'later', 'earlier',
+                            'morning', 'afternoon', 'evening', 'night', 'tonight',
+                            'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+                            'january', 'february', 'march', 'april', 'may', 'june',
+                            'july', 'august', 'september', 'october', 'november', 'december'
+                        ]
+                        
+                        # Only flag if it's not a common word and has high confidence
+                        if detected_text not in common_time_words and result.score > 0.9:
+                            filtered_results.append(result)
+                    elif result.entity_type == "PERSON":
+                        # Filter out common names that are not actually PII
+                        common_names = [
+                            'john', 'jane', 'smith', 'doe', 'admin', 'user', 'test',
+                            'hello', 'hi', 'thanks', 'please', 'sorry', 'ok', 'yes', 'no'
+                        ]
+                        
+                        # Only flag if it's not a common word and has high confidence
+                        if detected_text not in common_names and result.score > 0.9:
+                            filtered_results.append(result)
                     else:
-                        # Include all non-URL entities
-                        filtered_results.append(result)
+                        # For other entity types, only include if high confidence
+                        if result.score > 0.9:
+                            filtered_results.append(result)
                 
                 # Only flag if we have non-image URL results
                 if filtered_results:

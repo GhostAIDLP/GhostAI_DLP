@@ -9,6 +9,7 @@ class RegexSecretsScanner(BaseScanner):
             'aws_access_key': re.compile(r'AKIA[0-9A-Z]{16}', re.IGNORECASE),
             'aws_secret_key': re.compile(r'[A-Za-z0-9/+=]{40}', re.IGNORECASE),
             'api_key': re.compile(r'(?i)(api[_-]?key|apikey)\s*[:=]\s*["\']?([A-Za-z0-9_\-]{20,})["\']?'),
+            'openai_key': re.compile(r'sk-[A-Za-z0-9]{10,}'),
             'bearer_token': re.compile(r'bearer\s+[A-Za-z0-9_\-\.]{20,}', re.IGNORECASE),
             'jwt_token': re.compile(r'eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+'),
             'private_key': re.compile(r'-----BEGIN\s+(?:RSA\s+)?PRIVATE\s+KEY-----'),
