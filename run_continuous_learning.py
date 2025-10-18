@@ -17,7 +17,7 @@ from ghostai.redteam.continuous_learning import ContinuousLearningSystem
 
 def main():
     parser = argparse.ArgumentParser(description='Run Continuous Learning System')
-    parser.add_argument('--duration', type=int, default=1, help='Duration in hours (default: 1)')
+    parser.add_argument('--duration', type=float, default=1, help='Duration in hours (default: 1)')
     parser.add_argument('--interval', type=int, default=60, help='Learning interval in seconds (default: 60)')
     parser.add_argument('--batch-size', type=int, default=20, help='Attack batch size (default: 20)')
     parser.add_argument('--test', action='store_true', help='Run test mode (6 minutes)')

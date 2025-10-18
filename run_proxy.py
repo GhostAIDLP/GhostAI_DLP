@@ -12,12 +12,20 @@ def main():
     print("🚀 GhostAI DLP Proxy - Localhost Runner")
     print("=" * 50)
     
-    # Use environment variable or set default
-    if 'OPENAI_API_KEY' not in os.environ:
-        os.environ['OPENAI_API_KEY'] = 'dummy-key-for-testing'
+    # Check if we should use mock mode
+    use_mock = os.getenv('USE_MOCK_LLM', 'true').lower() == 'true'
+    
+    if use_mock:
+        print("🤖 Using Mock LLM Server (no external API calls)")
+        print("📍 Mock LLM: http://localhost:5005")
+    else:
+        print("🌐 Using OpenAI API")
+        # Use environment variable or set default
+        if 'OPENAI_API_KEY' not in os.environ:
+            os.environ['OPENAI_API_KEY'] = 'dummy-key-for-testing'
     
     # Initialize proxy
-    proxy = GhostAIProxy()
+    proxy = GhostAIProxy(use_mock=use_mock)
     
     print("🌐 Starting proxy server...")
     print("📍 API Endpoint: http://localhost:5004/v1/chat/completions")
