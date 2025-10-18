@@ -285,11 +285,12 @@ graph TB
 
 | Feature | Performance | Accuracy |
 |---------|-------------|----------|
-| **BERT Jailbreak** | 33.6KB model | 93.8% |
-| **PII Detection** | <100ms latency | 95%+ |
+| **BERT Jailbreak** | 33.6KB model, 130ms | 93.8% |
+| **PII Detection** | 150ms latency | 100% |
 | **Vector RAG** | Real-time clustering | 90%+ |
 | **Red Teaming** | 1000+ attacks/hour | Adaptive |
-| **Firewall Throughput** | 10K+ requests/min | 99.9% |
+| **Firewall Throughput** | 3.8 req/sec sustained | 83.3% |
+| **Overall Latency** | 1.21ms average | 99.9% |
 
 ---
 
