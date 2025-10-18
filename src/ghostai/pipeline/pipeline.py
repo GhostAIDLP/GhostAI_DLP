@@ -7,6 +7,7 @@ from typing import Dict, Any, Optional
 from ghostai.scanners.presidio_scanner import PresidioScanner
 from ghostai.scanners.trufflehog_scanner import TrufflehogScanner
 from ghostai.scanners.prompt_guard2_scanner import PromptGuard2Scanner
+from ghostai.scanners.bert_jailbreak_scanner import BERTJailbreakScanner
 from ghostai.scanners.gitleaks_scanner import GitleaksScanner
 from ghostai.scanners.regex_secrets_scanner import RegexSecretsScanner
 from ghostai.database_logger_sqlite import get_database_logger
@@ -44,6 +45,8 @@ class Pipeline:
             self.scanners.append(GitleaksScanner())
         if cfg.get("promptguard2", {}).get("enabled", False):
             self.scanners.append(PromptGuard2Scanner(threshold=cfg["promptguard2"].get("threshold", 0.8)))
+        if cfg.get("bert_jailbreak", {}).get("enabled", False):
+            self.scanners.append(BERTJailbreakScanner(threshold=cfg["bert_jailbreak"].get("threshold", 0.3)))
         if cfg.get("regex_secrets", {}).get("enabled", False):
             self.scanners.append(RegexSecretsScanner())
 

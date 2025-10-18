@@ -12,8 +12,9 @@ def main():
     print("🚀 GhostAI DLP Proxy - Localhost Runner")
     print("=" * 50)
     
-    # Set dummy API key for testing
-    os.environ['OPENAI_API_KEY'] = 'dummy-key-for-testing'
+    # Use environment variable or set default
+    if 'OPENAI_API_KEY' not in os.environ:
+        os.environ['OPENAI_API_KEY'] = 'dummy-key-for-testing'
     
     # Initialize proxy
     proxy = GhostAIProxy()

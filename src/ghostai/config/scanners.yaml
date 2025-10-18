@@ -8,8 +8,11 @@ profiles:
     gitleaks:
       enabled: true
     promptguard2:
-      enabled: true
+      enabled: false
       threshold: 0.85
+    bert_jailbreak:
+      enabled: true
+      threshold: 0.3
     regex_secrets:
       enabled: true
 
