@@ -94,14 +94,17 @@ class ContinuousLearningSystem:
     
     def start_continuous_learning(self, duration_hours: int = 24):
         """Start continuous learning for specified duration."""
-        print(f"🚀 Starting continuous learning for {duration_hours} hours...")
+        if duration_hours == 0:
+            print(f"🚀 Starting continuous learning (INFINITE duration)...")
+        else:
+            print(f"🚀 Starting continuous learning for {duration_hours} hours...")
         print(f"   Learning interval: {self.learning_interval} seconds")
         print(f"   Attack batch size: {self.attack_batch_size}")
         print(f"   Baseline accuracy: {self.baseline_performance['accuracy']:.1%}")
         
         self.is_running = True
         start_time = time.time()
-        end_time = start_time + (duration_hours * 3600)
+        end_time = start_time + (duration_hours * 3600) if duration_hours > 0 else float('inf')
         
         cycle_count = 0
         

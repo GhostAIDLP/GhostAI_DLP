@@ -17,17 +17,25 @@ from ghostai.redteam.continuous_learning import ContinuousLearningSystem
 
 def main():
     parser = argparse.ArgumentParser(description='Run Continuous Learning System')
-    parser.add_argument('--duration', type=float, default=1, help='Duration in hours (default: 1)')
+    parser.add_argument('--duration', type=float, default=1, help='Duration in hours (default: 1, 0 = infinite)')
     parser.add_argument('--interval', type=int, default=60, help='Learning interval in seconds (default: 60)')
     parser.add_argument('--batch-size', type=int, default=20, help='Attack batch size (default: 20)')
     parser.add_argument('--test', action='store_true', help='Run test mode (6 minutes)')
+    parser.add_argument('--daemon', action='store_true', help='Run as daemon (infinite duration)')
     
     args = parser.parse_args()
+    
+    # Handle daemon mode
+    if args.daemon:
+        args.duration = 0  # Infinite duration
     
     print("🚀 GhostAI Continuous Learning System")
     print("=" * 50)
     print(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"Duration: {args.duration} hours")
+    if args.duration == 0:
+        print("Duration: INFINITE (daemon mode)")
+    else:
+        print(f"Duration: {args.duration} hours")
     print(f"Learning interval: {args.interval} seconds")
     print(f"Attack batch size: {args.batch_size}")
     print("=" * 50)

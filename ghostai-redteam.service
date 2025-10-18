@@ -1,0 +1,28 @@
+[Unit]
+Description=GhostAI Security Firewall - Red Team Daemon
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=ghostai
+Group=ghostai
+WorkingDirectory=/Users/rjama/GhostAI_DLP
+Environment=PATH=/Users/rjama/GhostAI_DLP/venv_stable/bin
+ExecStart=/Users/rjama/GhostAI_DLP/venv_stable/bin/python /Users/rjama/GhostAI_DLP/run_continuous_learning.py --daemon --interval 10 --batch-size 5
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/Users/rjama/GhostAI_DLP/data
+ReadWritePaths=/Users/rjama/GhostAI_DLP/logs
+
+[Install]
+WantedBy=multi-user.target
