@@ -1,5 +1,5 @@
 """
-Database logging utility for GhostAI DLP SDK.
+Database logging utility for GhostAI firewall SDK.
 Handles real-time logging of scan results to PostgreSQL with encryption support.
 """
 
@@ -19,7 +19,7 @@ from models import DlpFinding
 
 
 class DatabaseLogger:
-    """Handles database logging for DLP scan results."""
+    """Handles database logging for firewall scan results."""
     
     def __init__(self, database_url: Optional[str] = None, encryption_key: Optional[str] = None):
         """

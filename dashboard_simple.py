@@ -10,7 +10,7 @@ import json
 
 # Page config
 st.set_page_config(
-    page_title="GhostAI DLP Dashboard",
+    page_title="GhostAI firewall Dashboard",
     page_icon="🔍",
     layout="wide"
 )
@@ -18,7 +18,7 @@ st.set_page_config(
 def load_data():
     """Load data from SQLite database"""
     try:
-        conn = sqlite3.connect('data/ghostai_dlp.db')
+        conn = sqlite3.connect('data/ghostai_firewall.db')
         df = pd.read_sql_query('''
             SELECT * FROM dlp_findings 
             ORDER BY timestamp DESC 
@@ -42,7 +42,7 @@ def load_data():
         return pd.DataFrame()
 
 def main():
-    st.title("🔍 GhostAI DLP Dashboard")
+    st.title("🔍 GhostAI firewall Dashboard")
     st.markdown("Real-time Data Loss Prevention Analytics")
     
     # Add refresh button
@@ -161,7 +161,7 @@ print('Generated 10 test records')
     
     # Footer
     st.markdown("---")
-    st.markdown("**GhostAI DLP Dashboard** - Real-time Data Loss Prevention Analytics")
+    st.markdown("**GhostAI firewall Dashboard** - Real-time Data Loss Prevention Analytics")
 
 if __name__ == "__main__":
     main()

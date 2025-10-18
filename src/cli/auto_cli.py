@@ -10,7 +10,7 @@ def main():
     # Case 1: piped input (e.g., cat file.py | python -m src.cli.auto_cli)
     if not sys.stdin.isatty():
         text = sys.stdin.read()
-        filename = os.environ.get("DLP_FILENAME", "stdin")
+        filename = os.environ.get("firewall_FILENAME", "stdin")
     # Case 2: passed as CLI args
     elif len(sys.argv) > 1:
         text = " ".join(sys.argv[1:])

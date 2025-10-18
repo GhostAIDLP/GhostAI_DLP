@@ -64,7 +64,7 @@ def main():
         print("⚠️ Model may need more training data or tuning")
     
     print(f"\n💾 Model saved to: {scanner.model_path}")
-    print("🔧 You can now use this model in your DLP pipeline!")
+    print("🔧 You can now use this model in your firewall pipeline!")
 
 if __name__ == "__main__":
     main()

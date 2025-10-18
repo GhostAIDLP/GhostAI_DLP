@@ -10,9 +10,9 @@ def run_demo():
     # Setup logging before creating pipeline
     
     templates = [f for f in os.listdir(TEMPLATES_DIR) if f.endswith(".jinja")]
-    print(f"\n🧪 Running GhostAI DLP on {len(templates)} Jinja templates...\n")
+    print(f"\n🧪 Running GhostAI firewall on {len(templates)} Jinja templates...\n")
 
-    # Initialize GhostAI DLP pipeline
+    # Initialize GhostAI firewall pipeline
     pipeline = Pipeline()
 
     for tname in templates:

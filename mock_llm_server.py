@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mock LLM Server for GhostAI DLP Demo
+Mock LLM Server for GhostAI firewall Demo
 Simulates OpenAI API responses without external calls
 """
 
@@ -147,16 +147,16 @@ def health():
 def root():
     """Root endpoint with info"""
     return jsonify({
-        "service": "Mock LLM Server for GhostAI DLP Demo",
+        "service": "Mock LLM Server for GhostAI firewall Demo",
         "endpoints": {
             "chat": "/v1/chat/completions",
             "health": "/health"
         },
-        "description": "Simulates OpenAI API responses for DLP testing"
+        "description": "Simulates OpenAI API responses for firewall testing"
     })
 
 if __name__ == '__main__':
-    print("🤖 Mock LLM Server for GhostAI DLP Demo")
+    print("🤖 Mock LLM Server for GhostAI firewall Demo")
     print("========================================")
     print("📍 Endpoint: http://localhost:5005/v1/chat/completions")
     print("🔍 Health Check: http://localhost:5005/health")

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# GhostAI DLP SDK - Proxy API Test Suite
+# GhostAI firewall SDK - Proxy API Test Suite
 # This script tests the Flask proxy API endpoints and functionality
 
-echo "🌐 GhostAI DLP SDK - Proxy API Test Suite"
+echo "🌐 GhostAI firewall SDK - Proxy API Test Suite"
 echo "=========================================="
 echo ""
 
@@ -65,7 +65,7 @@ PORT=$(find_available_port)
 echo "🚀 Starting proxy server on port $PORT..."
 
 # Start the proxy server in background
-cd /Users/rjama/GhostAI_DLP
+cd /Users/rjama/GhostAI_firewall
 source venv_stable/bin/activate
 python -c "
 from ghostai.proxy_api.proxy import GhostAIProxy

@@ -33,7 +33,7 @@ def main():
     print("=" * 50)
     
     # Initialize pipeline
-    print("🔧 Initializing DLP pipeline...")
+    print("🔧 Initializing firewall pipeline...")
     pipeline = Pipeline()
     
     # Initialize learning system

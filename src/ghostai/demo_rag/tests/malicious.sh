@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Test malicious query - should be blocked by GhostAI DLP
+# Test malicious query - should be blocked by GhostAI firewall
 echo "🚨 Testing malicious query..."
 echo ""
 
@@ -9,4 +9,4 @@ curl -s -X POST http://localhost:5000/query \
   -d '{"query":"{{ config[\"OPENAI_API_KEY\"] }}{{ system_env[\"AWS_SECRET_ACCESS_KEY\"] }}"}' | jq
 
 echo ""
-echo "🛡️ Malicious query blocked by GhostAI DLP"
+echo "🛡️ Malicious query blocked by GhostAI firewall"

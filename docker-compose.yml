@@ -1,10 +1,10 @@
-# Docker Compose for GhostAI DLP SDK
+# Docker Compose for GhostAI firewall SDK
 # Includes the main application and supporting services
 
 version: '3.8'
 
 services:
-  # Main GhostAI DLP application
+  # Main GhostAI firewall application
   ghostai-dlp:
     build:
       context: .

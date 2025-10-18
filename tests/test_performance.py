@@ -1,4 +1,4 @@
-# Performance Testing Suite for GhostAI DLP SDK
+# Performance Testing Suite for GhostAI firewall SDK
 # Tests latency, throughput, accuracy, memory usage, and concurrency
 
 import time
@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from ghostai.pipeline.pipeline import Pipeline
 
 class PerformanceMetrics:
-    """Performance testing utilities for GhostAI DLP SDK"""
+    """Performance testing utilities for GhostAI firewall SDK"""
     
     def __init__(self):
         self.pipeline = Pipeline()
@@ -319,7 +319,7 @@ class TestMemoryUsage:
 # CLI Performance Testing
 def run_performance_benchmark():
     """Run comprehensive performance benchmark"""
-    print("🚀 GhostAI DLP SDK - Performance Benchmark")
+    print("🚀 GhostAI firewall SDK - Performance Benchmark")
     print("=" * 50)
     
     metrics = PerformanceMetrics()

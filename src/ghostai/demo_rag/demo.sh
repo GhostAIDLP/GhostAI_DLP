@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Complete RAG Demo with GhostAI DLP Firewall
-echo "🚀 RAG Demo with GhostAI DLP Firewall"
+# Complete RAG Demo with GhostAI firewall Firewall
+echo "🚀 RAG Demo with GhostAI firewall Firewall"
 echo "======================================"
 echo ""
 

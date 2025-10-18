@@ -4,7 +4,7 @@
 
 ## 📋 Overview
 
-The GhostAI DLP SDK now includes a comprehensive real-time logging and analytics system that captures, stores, and visualizes all DLP scan results. This system provides enterprise-grade observability, security, and performance monitoring.
+The GhostAI firewall SDK now includes a comprehensive real-time logging and analytics system that captures, stores, and visualizes all firewall scan results. This system provides enterprise-grade observability, security, and performance monitoring.
 
 ## 🏗️ Architecture
 

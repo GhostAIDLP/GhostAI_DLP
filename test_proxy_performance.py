@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-GhostAI DLP Proxy Performance Test
+GhostAI firewall Proxy Performance Test
 Tests realistic performance through HTTP API with JSON overhead
 """
 
@@ -157,7 +157,7 @@ def test_concurrency(proxy_url, num_threads=10, requests_per_thread=5):
 def main():
     proxy_url = "http://localhost:5004"
     
-    print("🚀 GhostAI DLP Proxy Performance Test")
+    print("🚀 GhostAI firewall Proxy Performance Test")
     print("=" * 50)
     
     # Check if proxy is running

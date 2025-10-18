@@ -1,4 +1,4 @@
-# Docker Compose override for GhostAI DLP SDK
+# Docker Compose override for GhostAI firewall SDK
 # This extends the base docker-compose.yml with the main application
 
 version: '3.8'

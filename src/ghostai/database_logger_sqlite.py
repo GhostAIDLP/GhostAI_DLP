@@ -1,5 +1,5 @@
 """
-SQLite database logging utility for GhostAI DLP SDK.
+SQLite database logging utility for GhostAI firewall SDK.
 Handles real-time logging of scan results to SQLite for local development.
 """
 
@@ -14,7 +14,7 @@ from loguru import logger
 
 
 class DatabaseLogger:
-    """Handles database logging for DLP scan results using SQLite."""
+    """Handles database logging for firewall scan results using SQLite."""
     
     def __init__(self, database_path: Optional[str] = None):
         """
@@ -25,7 +25,7 @@ class DatabaseLogger:
         """
         self.database_path = database_path or os.getenv(
             "DATABASE_URL", 
-            "data/ghostai_dlp.db"
+            "data/ghostai_firewall.db"
         )
         
         # Ensure database directory exists

@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for GhostAI DLP SDK
+# Multi-stage Dockerfile for GhostAI firewall SDK
 # Supports both ARM64 (Apple Silicon) and x86_64 (Intel/AMD)
 
 FROM python:3.12-slim as base

@@ -1,6 +1,6 @@
-# 🐳 GhostAI DLP SDK - Docker Deployment Guide
+# 🐳 GhostAI firewall SDK - Docker Deployment Guide
 
-> **Cross-platform containerized deployment for GhostAI DLP SDK**
+> **Cross-platform containerized deployment for GhostAI firewall SDK**
 
 ## 🚀 Quick Start
 
@@ -267,7 +267,7 @@ docker-compose logs --tail=100 -f ghostai-dlp
 ### Metrics (Future)
 - Prometheus metrics endpoint (planned)
 - Grafana dashboards (planned)
-- Custom DLP metrics (planned)
+- Custom firewall metrics (planned)
 
 ## 🚀 Advanced Usage
 
@@ -310,4 +310,4 @@ docker buildx build --platform linux/amd64,linux/arm64 \
 ✅ **Development friendly** - Hot reload, debug mode  
 ✅ **External tool support** - TruffleHog, GitLeaks included  
 
-The GhostAI DLP SDK is now fully containerized and ready for deployment across any environment! 🎉
+The GhostAI firewall SDK is now fully containerized and ready for deployment across any environment! 🎉

@@ -1,4 +1,4 @@
-# GhostAI DLP SDK - Cross-platform requirements
+# GhostAI firewall SDK - Cross-platform requirements
 # This file ensures compatibility across different architectures
 
 # Core dependencies

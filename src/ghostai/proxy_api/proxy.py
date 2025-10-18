@@ -36,7 +36,7 @@ class GhostAIProxy:
                 user_agent = request.headers.get('User-Agent', 'unknown')
                 ip_address = request.remote_addr
 
-                # 🔍 run DLP scans
+                # 🔍 run firewall scans
                 if "messages" in body:
                     for msg in body["messages"]:
                         if msg.get("role") == "user":

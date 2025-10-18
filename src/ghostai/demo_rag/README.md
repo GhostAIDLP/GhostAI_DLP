@@ -1,6 +1,6 @@
-# RAG Demo with GhostAI DLP Firewall
+# RAG Demo with GhostAI firewall Firewall
 
-A minimal Flask-based RAG demo that integrates the GhostAI DLP SDK as a middleware "firewall" to protect against data exfiltration attempts.
+A minimal Flask-based RAG demo that integrates the GhostAI firewall SDK as a middleware "firewall" to protect against data exfiltration attempts.
 
 ## Quick Start
 
@@ -30,14 +30,14 @@ A minimal Flask-based RAG demo that integrates the GhostAI DLP SDK as a middlewa
 
 ## How It Works
 
-- **GhostAI DLP** scans every incoming query for sensitive data patterns
+- **GhostAI firewall** scans every incoming query for sensitive data patterns
 - **Safe queries** (like document summarization) pass through with low risk scores
 - **Malicious queries** (like API key exfiltration) are blocked with high risk scores
 - **All scans** are logged to `scan_results.json` with timestamps and risk scores
 
 ## Demo Flow
 
-1. Flask app starts with GhostAI DLP protection active
+1. Flask app starts with GhostAI firewall protection active
 2. Safe query returns LLM response with low risk score
 3. Malicious query returns 403 error with high risk score
 4. Scan results show the protection in action

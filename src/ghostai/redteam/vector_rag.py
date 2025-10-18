@@ -1,5 +1,5 @@
 """
-Vector RAG Pipeline for Continuous DLP Learning
+Vector RAG Pipeline for Continuous firewall Learning
 Uses vector embeddings and k-nearest neighbors to learn from attack patterns.
 """
 
@@ -38,7 +38,7 @@ class LearningInsight:
 
 class VectorRAGPipeline:
     """
-    Vector RAG pipeline for continuous learning from DLP attacks.
+    Vector RAG pipeline for continuous learning from firewall attacks.
     """
     
     def __init__(self, db_path: str = "data/vector_rag.db", vector_dim: int = 2000):

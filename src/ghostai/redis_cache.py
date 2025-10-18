@@ -1,5 +1,5 @@
 """
-Redis cache utility for GhostAI DLP SDK.
+Redis cache utility for GhostAI firewall SDK.
 Handles caching of frequent queries and scan results.
 """
 
@@ -11,7 +11,7 @@ from loguru import logger
 
 
 class RedisCache:
-    """Handles Redis caching for DLP scan results and queries."""
+    """Handles Redis caching for firewall scan results and queries."""
     
     def __init__(self, host: str = "redis", port: int = 6379, db: int = 0, password: Optional[str] = None):
         """

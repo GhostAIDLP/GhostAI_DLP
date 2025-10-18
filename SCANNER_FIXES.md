@@ -1,4 +1,4 @@
-# 🔧 GhostAI DLP Scanner Fixes
+# 🔧 GhostAI firewall Scanner Fixes
 
 ## Current Status Summary
 

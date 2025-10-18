@@ -1,4 +1,4 @@
-# Development Dockerfile for GhostAI DLP SDK
+# Development Dockerfile for GhostAI firewall SDK
 # Includes development tools and hot reload
 
 FROM python:3.12-slim

@@ -53,7 +53,7 @@ class Pipeline:
     def run(self, text: str, session_id: Optional[str] = None, user_agent: Optional[str] = None, 
             ip_address: Optional[str] = None) -> Dict[str, Any]:
         """
-        Run DLP scan on input text with optional database logging.
+        Run firewall scan on input text with optional database logging.
         
         Args:
             text: Input text to scan

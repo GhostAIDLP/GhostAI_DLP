@@ -1,7 +1,7 @@
-# GhostAI DLP SDK - Minimal Jinja Demo
+# GhostAI firewall SDK - Minimal Jinja Demo
 
 ## 🎯 Goal
-Run one simple command that loads 5 Jinja templates, renders them, sends each to the DLP scanner, and prints detections/blocks.
+Run one simple command that loads 5 Jinja templates, renders them, sends each to the firewall scanner, and prints detections/blocks.
 
 ## ⚙️ Folder Layout
 ```
@@ -31,7 +31,7 @@ python demo_rag/simple_jinja_demo.py
 
 ## 📊 Output
 ```
-🧪 Running GhostAI DLP on 6 Jinja templates...
+🧪 Running GhostAI firewall on 6 Jinja templates...
 
 --- Testing safe_prompt.jinja ---
 🚨 BLOCKED: 1 scanner(s) flagged, 1 findings
@@ -48,7 +48,7 @@ python demo_rag/simple_jinja_demo.py
 ```
 
 ## 💡 Core Functionality
-- **GhostAI SDK** = DLP engine (regex + Presidio + entropy-based detection)
+- **GhostAI SDK** = firewall engine (regex + Presidio + entropy-based detection)
 - **Jinja Demo** = shows how runtime rendering can leak data → scanner intercepts it
 - **Use Case** = wrap this logic into proxy middleware or RAG pipeline hook
 
@@ -60,4 +60,4 @@ python demo_rag/simple_jinja_demo.py
 - **support_ticket.jinja** - Support ticket workflow
 - **api_docs.jinja** - API documentation workflow
 
-All templates are rendered with realistic data and scanned by GhostAI DLP to detect sensitive information leaks.
+All templates are rendered with realistic data and scanned by GhostAI firewall to detect sensitive information leaks.

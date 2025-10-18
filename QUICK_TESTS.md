@@ -1,4 +1,4 @@
-# 🚀 GhostAI DLP SDK - Quick Test Commands
+# 🚀 GhostAI firewall SDK - Quick Test Commands
 
 ## 🎯 **Essential Test Runs**
 

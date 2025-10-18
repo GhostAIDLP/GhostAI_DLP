@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# RAG Demo with GhostAI DLP Firewall
-echo "🚀 Starting RAG Demo with GhostAI DLP Firewall"
+# RAG Demo with GhostAI firewall Firewall
+echo "🚀 Starting RAG Demo with GhostAI firewall Firewall"
 echo "📊 Scan results will be logged to scan_results.json"
 echo "🔒 GhostAI is protecting against data exfiltration"
 echo ""

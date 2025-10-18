@@ -1,6 +1,6 @@
 """
 Algorithmic Red Teaming Engine
-Continuously generates attacks, learns from failures, and improves DLP detection.
+Continuously generates attacks, learns from failures, and improves firewall detection.
 """
 
 import os
@@ -377,7 +377,7 @@ class RedTeamEngine:
         return template
     
     def test_attack(self, attack_text: str, pipeline) -> AttackResult:
-        """Test an attack against the DLP pipeline."""
+        """Test an attack against the firewall pipeline."""
         result = pipeline.run(attack_text)
         
         # Determine if attack was successful
@@ -581,7 +581,7 @@ class RedTeamEngine:
         """Run continuous red teaming for specified duration."""
         print(f"🔥 Starting continuous red teaming for {duration_minutes} minutes...")
         print(f"   Attack interval: {attack_interval} seconds")
-        print(f"   Target: DLP Pipeline")
+        print(f"   Target: firewall Pipeline")
         
         start_time = time.time()
         end_time = start_time + (duration_minutes * 60)

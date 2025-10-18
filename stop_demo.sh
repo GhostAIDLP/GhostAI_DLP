@@ -1,7 +1,7 @@
 #!/bin/bash
-# GhostAI DLP Demo Stop Script
+# GhostAI firewall Demo Stop Script
 
-echo "⏹️  Stopping GhostAI DLP Demo Services"
+echo "⏹️  Stopping GhostAI firewall Demo Services"
 echo "======================================"
 
 # Kill processes by port

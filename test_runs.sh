@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# GhostAI DLP SDK - Comprehensive Test Runs
+# GhostAI firewall SDK - Comprehensive Test Runs
 # This script demonstrates all the detection capabilities of the GhostAI CLI
 
-echo "🕵️‍♂️ GhostAI DLP SDK - Comprehensive Test Suite"
+echo "🕵️‍♂️ GhostAI firewall SDK - Comprehensive Test Suite"
 echo "=================================================="
 echo ""
 

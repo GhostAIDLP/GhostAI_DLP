@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-GhostAI DLP SDK - Localhost Runner
-Simple script to run GhostAI DLP locally without Docker
+GhostAI firewall SDK - Localhost Runner
+Simple script to run GhostAI firewall locally without Docker
 """
 
 import os
@@ -10,7 +10,7 @@ import json
 from ghostai.pipeline.pipeline import Pipeline
 
 def main():
-    print("🚀 GhostAI DLP SDK - Localhost Runner")
+    print("🚀 GhostAI firewall SDK - Localhost Runner")
     print("=" * 50)
     
     # Initialize pipeline (disable logging to avoid DB errors)
@@ -26,7 +26,7 @@ def main():
         "Hello world, normal message"
     ]
     
-    print("\n🔍 Running DLP scans...")
+    print("\n🔍 Running firewall scans...")
     print("-" * 30)
     
     for i, text in enumerate(test_cases, 1):

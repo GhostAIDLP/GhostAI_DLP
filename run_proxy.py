@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-GhostAI DLP SDK - Localhost Proxy Runner
+GhostAI firewall SDK - Localhost Proxy Runner
 Simple Flask proxy server for localhost testing
 """
 
@@ -9,7 +9,7 @@ import sys
 from ghostai.proxy_api.proxy import GhostAIProxy
 
 def main():
-    print("🚀 GhostAI DLP Proxy - Localhost Runner")
+    print("🚀 GhostAI firewall Proxy - Localhost Runner")
     print("=" * 50)
     
     # Check if we should use mock mode

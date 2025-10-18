@@ -20,18 +20,18 @@ def log_result(text, result):
 
 @app.route("/query", methods=["POST"])
 def query():
-    """Main RAG query endpoint with GhostAI DLP protection"""
+    """Main RAG query endpoint with GhostAI firewall protection"""
     data = request.get_json()
     query_text = data.get("query", "")
     
-    # Scan the query with GhostAI DLP
+    # Scan the query with GhostAI firewall
     result = pipeline.run(query_text)
     log_result(query_text, result)
 
     # Block if risk score is too high
     if result["score"] > 0.8:
         return jsonify({
-            "error": "Prompt blocked by GhostAI DLP",
+            "error": "Prompt blocked by GhostAI firewall",
             "risk_score": result["score"],
             "flags": result["flags"]
         }), 403
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         with open("scan_results.json", "w") as f:
             f.write("")
     
-    print("🚀 Starting RAG Demo with GhostAI DLP Firewall")
+    print("🚀 Starting RAG Demo with GhostAI firewall Firewall")
     print("📊 Scan results will be logged to scan_results.json")
     print("🔒 GhostAI is protecting against data exfiltration")
     app.run(host="0.0.0.0", port=5000, debug=True)

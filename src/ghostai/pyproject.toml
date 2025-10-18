@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "ghostai"
 version = "0.1.0"
-description = "GhostAI SDK — Unified DLP & GenAI Security Scanning Pipeline"
+description = "GhostAI SDK — Unified firewall & GenAI Security Scanning Pipeline"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Radwan Jama" }]

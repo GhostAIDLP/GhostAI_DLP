@@ -1,6 +1,6 @@
 """
-Streamlit Dashboard for GhostAI DLP SDK
-Real-time monitoring and analytics for DLP scan results.
+Streamlit Dashboard for GhostAI firewall SDK
+Real-time monitoring and analytics for firewall scan results.
 """
 
 import streamlit as st
@@ -14,7 +14,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 # Page configuration
 st.set_page_config(
-    page_title="GhostAI DLP Dashboard",
+    page_title="GhostAI firewall Dashboard",
     page_icon="🕵️‍♂️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -85,7 +85,7 @@ def main():
     """Main dashboard application."""
     
     # Header
-    st.markdown('<h1 class="main-header">🕵️‍♂️ GhostAI DLP Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">🕵️‍♂️ GhostAI firewall Dashboard</h1>', unsafe_allow_html=True)
     
     # Sidebar controls
     st.sidebar.header("📊 Dashboard Controls")
@@ -277,7 +277,7 @@ def main():
     
     # Footer
     st.markdown("---")
-    st.markdown("**GhostAI DLP SDK Dashboard** | Built with Streamlit and Plotly")
+    st.markdown("**GhostAI firewall SDK Dashboard** | Built with Streamlit and Plotly")
 
 if __name__ == "__main__":
     main()

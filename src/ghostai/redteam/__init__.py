@@ -1,6 +1,6 @@
 """
 Red Team Module
-Algorithmic red teaming and continuous learning for DLP systems.
+Algorithmic red teaming and continuous learning for firewall systems.
 """
 
 from .redteam_engine import RedTeamEngine

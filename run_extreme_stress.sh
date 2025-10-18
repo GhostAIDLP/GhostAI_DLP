@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "🔥🔥🔥 GHOSTAI DLP EXTREME STRESS TEST 🔥🔥🔥"
+echo "🔥🔥🔥 GHOSTAI firewall EXTREME STRESS TEST 🔥🔥🔥"
 echo "=============================================="
 echo ""
 echo "⚠️  WARNING: This will generate MASSIVE amounts of data!"

@@ -1,4 +1,4 @@
-# Dockerfile for GhostAI DLP Dashboard
+# Dockerfile for GhostAI firewall Dashboard
 FROM python:3.12-slim
 
 # Set working directory

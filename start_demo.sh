@@ -1,7 +1,7 @@
 #!/bin/bash
-# GhostAI DLP Demo Startup Script
+# GhostAI firewall Demo Startup Script
 
-echo "🚀 Starting GhostAI DLP Demo"
+echo "🚀 Starting GhostAI firewall Demo"
 echo "=============================="
 
 # Activate virtual environment
@@ -16,7 +16,7 @@ MOCK_PID=$!
 sleep 2
 
 # Start Proxy in background  
-echo "🌐 Starting DLP Proxy..."
+echo "🌐 Starting firewall Proxy..."
 python run_proxy.py &
 PROXY_PID=$!
 
@@ -35,7 +35,7 @@ echo ""
 echo "✅ All services started!"
 echo "=============================="
 echo "📍 Mock LLM: http://localhost:5005"
-echo "📍 DLP Proxy: http://localhost:5004" 
+echo "📍 firewall Proxy: http://localhost:5004" 
 echo "📍 Dashboard: http://localhost:8501"
 echo ""
 echo "🧪 Run demo: python demo_features.py"
