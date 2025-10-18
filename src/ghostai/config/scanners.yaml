@@ -12,7 +12,7 @@ profiles:
       threshold: 0.85
     bert_jailbreak:
       enabled: true
-      threshold: 0.3
+      threshold: 0.5
     regex_secrets:
       enabled: true
 
