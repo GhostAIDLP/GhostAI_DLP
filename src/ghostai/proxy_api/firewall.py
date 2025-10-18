@@ -73,15 +73,15 @@ class GhostAIFirewall:
                 'filter_responses': True,
                 'sanitize_pii': True,
                 'remove_secrets': True,
-                'rate_limit': {'enabled': True, 'requests_per_minute': 100, 'burst_size': 20},
+                'rate_limit': {'enabled': True, 'requests_per_minute': 1000, 'burst_size': 100},  # Increased for 1M/day
                 'ip_blocking': {'enabled': False, 'blacklist': [], 'whitelist': []},
                 'auth': {'enabled': False, 'api_key_required': False, 'jwt_required': False}
             },
             'thresholds': {
-                'jailbreak_confidence': 0.3,
-                'pii_confidence': 0.8,
-                'secret_confidence': 0.9,
-                'malicious_confidence': 0.7
+                'jailbreak_confidence': 0.7,  # Increased from 0.3 to reduce false positives
+                'pii_confidence': 0.9,        # Increased from 0.8 to reduce false positives
+                'secret_confidence': 0.95,    # Increased from 0.9 to reduce false positives
+                'malicious_confidence': 0.8   # Increased from 0.7 to reduce false positives
             },
             'logging': {
                 'enabled': True,
@@ -147,27 +147,33 @@ class GhostAIFirewall:
         policies = self.firewall_config['policies']
         thresholds = self.firewall_config['thresholds']
         
+        # Handle both dict and object scan results
+        if isinstance(scan_result, dict):
+            breakdown = scan_result.get('breakdown', {})
+        else:
+            breakdown = getattr(scan_result, 'breakdown', {})
+        
         # Check for jailbreaks
         if policies['block_jailbreaks']:
-            for breakdown in scan_result.get('breakdown', []):
-                if breakdown.get('name') == 'bert-jailbreak' and breakdown.get('flagged'):
-                    confidence = breakdown.get('score', 0)
+            for scanner_name, scanner_result in breakdown.items():
+                if 'bert' in scanner_name.lower() and scanner_result.get('flagged', False):
+                    confidence = scanner_result.get('score', 0)
                     if confidence >= thresholds['jailbreak_confidence']:
                         return True, f"Jailbreak detected (confidence: {confidence:.2f})"
         
         # Check for PII
         if policies['block_pii']:
-            for breakdown in scan_result.get('breakdown', []):
-                if breakdown.get('name') == 'presidio' and breakdown.get('flagged'):
-                    confidence = breakdown.get('score', 0)
+            for scanner_name, scanner_result in breakdown.items():
+                if 'presidio' in scanner_name.lower() and scanner_result.get('flagged', False):
+                    confidence = scanner_result.get('score', 0)
                     if confidence >= thresholds['pii_confidence']:
                         return True, f"PII detected (confidence: {confidence:.2f})"
         
         # Check for secrets
         if policies['block_secrets']:
-            for breakdown in scan_result.get('breakdown', []):
-                if breakdown.get('name') == 'regex_secrets' and breakdown.get('flagged'):
-                    confidence = breakdown.get('score', 0)
+            for scanner_name, scanner_result in breakdown.items():
+                if 'secret' in scanner_name.lower() and scanner_result.get('flagged', False):
+                    confidence = scanner_result.get('score', 0)
                     if confidence >= thresholds['secret_confidence']:
                         return True, f"Secret detected (confidence: {confidence:.2f})"
         
@@ -182,19 +188,25 @@ class GhostAIFirewall:
         
         # Remove PII from response
         if self.firewall_config['policies']['sanitize_pii']:
-            for breakdown in scan_result.get('breakdown', []):
-                if breakdown.get('name') == 'presidio' and breakdown.get('flagged'):
-                    # Simple PII replacement (in production, use more sophisticated methods)
-                    sanitized = sanitized.replace("123-45-6789", "[SSN]")
-                    sanitized = sanitized.replace("4111-1111-1111-1111", "[CREDIT_CARD]")
+            if isinstance(scan_result, dict):
+                breakdown = scan_result.get('breakdown', {})
+                if isinstance(breakdown, dict):
+                    for scanner_name, scanner_result in breakdown.items():
+                        if 'presidio' in scanner_name.lower() and scanner_result.get('flagged', False):
+                            # Simple PII replacement (in production, use more sophisticated methods)
+                            sanitized = sanitized.replace("123-45-6789", "[SSN]")
+                            sanitized = sanitized.replace("4111-1111-1111-1111", "[CREDIT_CARD]")
         
         # Remove secrets from response
         if self.firewall_config['policies']['remove_secrets']:
-            for breakdown in scan_result.get('breakdown', []):
-                if breakdown.get('name') == 'regex_secrets' and breakdown.get('flagged'):
-                    # Simple secret replacement
-                    sanitized = sanitized.replace("secret123", "[SECRET]")
-                    sanitized = sanitized.replace("password", "[PASSWORD]")
+            if isinstance(scan_result, dict):
+                breakdown = scan_result.get('breakdown', {})
+                if isinstance(breakdown, dict):
+                    for scanner_name, scanner_result in breakdown.items():
+                        if 'secret' in scanner_name.lower() and scanner_result.get('flagged', False):
+                            # Simple secret replacement
+                            sanitized = sanitized.replace("secret123", "[SECRET]")
+                            sanitized = sanitized.replace("password", "[PASSWORD]")
         
         return sanitized
 
@@ -257,13 +269,35 @@ class GhostAIFirewall:
                 if not body:
                     return jsonify({"error": "No JSON body provided"}), 400
                 
-                # Check for duplicate requests (simple deduplication)
-                request_hash = hashlib.md5(json.dumps(body, sort_keys=True).encode()).hexdigest()
-                if request_hash in self.blocked_requests:
+                # Check for duplicate requests (intelligent deduplication)
+                # Only block exact duplicates from same IP within last 30 seconds
+                request_content = ""
+                if "messages" in body:
+                    for msg in body["messages"]:
+                        if msg.get("role") == "user":
+                            request_content += msg.get("content", "")
+                
+                # Create hash based on content + IP + timestamp (rounded to 30-second intervals)
+                current_time = time.time()
+                time_window = int(current_time // 30) * 30  # 30-second windows
+                duplicate_key = f"{ip_address}:{hashlib.md5(request_content.encode()).hexdigest()}:{time_window}"
+                
+                # Clean old entries (older than 1 minute)
+                if hasattr(self, '_duplicate_timestamps'):
+                    self._duplicate_timestamps = {k: v for k, v in self._duplicate_timestamps.items() 
+                                                if current_time - v < 60}  # 1 minute
+                else:
+                    self._duplicate_timestamps = {}
+                
+                # Only block if same content from same IP in same 30-second window
+                if duplicate_key in self._duplicate_timestamps:
                     return jsonify({
                         "error": "Duplicate request blocked",
                         "code": "DUPLICATE_REQUEST"
                     }), 400
+                
+                # Store current request key with timestamp
+                self._duplicate_timestamps[duplicate_key] = current_time
                 
                 # 🔍 Run security scans
                 scan_results = []
@@ -282,7 +316,7 @@ class GhostAIFirewall:
                             # Check if request should be blocked
                             should_block, block_reason = self._should_block_request(scan_result)
                             if should_block:
-                                self.blocked_requests.add(request_hash)
+                                self.blocked_requests.add(duplicate_key)
                                 self._log_request(ip_address, user_agent, body, scan_result, 'blocked', block_reason)
                                 return jsonify({
                                     "error": f"Request blocked: {block_reason}",
@@ -291,12 +325,15 @@ class GhostAIFirewall:
                                 }), 403
                             
                             # Apply text modifications (anonymization, etc.)
-                            for b in scan_result["breakdown"]:
-                                extra = b.get("extra", {})
-                                if "anonymized" in extra:
-                                    text = extra["anonymized"]
-                                elif "redacted" in extra:
-                                    text = extra["redacted"]
+                            if isinstance(scan_result, dict):
+                                breakdown = scan_result.get("breakdown", {})
+                                if isinstance(breakdown, dict):
+                                    for scanner_name, scanner_result in breakdown.items():
+                                        extra = scanner_result.get("extra", {})
+                                        if "anonymized" in extra:
+                                            text = extra["anonymized"]
+                                        elif "redacted" in extra:
+                                            text = extra["redacted"]
                             
                             msg["content"] = text
                 

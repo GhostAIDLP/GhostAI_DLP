@@ -10,6 +10,8 @@ from ghostai.scanners.prompt_guard2_scanner import PromptGuard2Scanner
 from ghostai.scanners.bert_jailbreak_scanner import BERTJailbreakScanner
 from ghostai.scanners.gitleaks_scanner import GitleaksScanner
 from ghostai.scanners.regex_secrets_scanner import RegexSecretsScanner
+from ghostai.scanners.image_exploit_scanner import ImageExploitScanner
+from ghostai.scanners.pdf_exploit_scanner import PDFExploitScanner
 from ghostai.database_logger_sqlite import get_database_logger
 
 # dynamically compute config path based on THIS file’s position
@@ -49,6 +51,10 @@ class Pipeline:
             self.scanners.append(BERTJailbreakScanner(threshold=cfg["bert_jailbreak"].get("threshold", 0.3)))
         if cfg.get("regex_secrets", {}).get("enabled", False):
             self.scanners.append(RegexSecretsScanner())
+        if cfg.get("image_exploit", {}).get("enabled", False):
+            self.scanners.append(ImageExploitScanner(threshold=cfg["image_exploit"].get("threshold", 0.7)))
+        if cfg.get("pdf_exploit", {}).get("enabled", False):
+            self.scanners.append(PDFExploitScanner(threshold=cfg["pdf_exploit"].get("threshold", 0.7)))
 
     def run(self, text: str, session_id: Optional[str] = None, user_agent: Optional[str] = None, 
             ip_address: Optional[str] = None) -> Dict[str, Any]:
@@ -67,13 +73,31 @@ class Pipeline:
         start_time = time.time()
         
         if not self.scanners:
-            result = {"score": 0.0, "flags": [], "breakdown": []}
+            result = {"score": 0.0, "flags": [], "breakdown": {}}
         else:
             results = [s.scan(text) for s in self.scanners]
+            # Handle both dict and object results
+            scores = []
+            flags = []
+            breakdown = {}
+            
+            for i, r in enumerate(results):
+                if isinstance(r, dict):
+                    scores.append(r.get('score', 0.0))
+                    if r.get('flagged', False):
+                        flags.append(f"scanner_{i}")
+                    breakdown[f"scanner_{i}"] = r
+                else:
+                    scores.append(getattr(r, 'score', 0.0))
+                    if getattr(r, 'flagged', False):
+                        flags.append(getattr(r, 'name', f"scanner_{i}"))
+                    breakdown[getattr(r, 'name', f"scanner_{i}")] = r.to_dict() if hasattr(r, 'to_dict') else r
+            
             result = {
-                "score": max(r.score for r in results),
-                "flags": [r.name for r in results if r.flagged],
-                "breakdown": [r.to_dict() for r in results],
+                "score": max(scores) if scores else 0.0,
+                "flagged": max(scores) > 0.5 if scores else False,  # Add flagged field
+                "flags": flags,
+                "breakdown": breakdown,
             }
         
         # Add latency information

@@ -15,6 +15,12 @@ profiles:
       threshold: 0.5
     regex_secrets:
       enabled: true
+    image_exploit:
+      enabled: true
+      threshold: 0.8
+    pdf_exploit:
+      enabled: true
+      threshold: 0.7
 
   # part dan will be working on
   ci:
