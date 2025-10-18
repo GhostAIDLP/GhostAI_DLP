@@ -1,0 +1,70 @@
+# GhostAI Security Firewall Configuration
+# This file configures the firewall behavior and security policies
+
+firewall:
+  # General firewall settings
+  mode: "firewall"  # firewall, proxy, or monitor
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  max_request_size: 1048576  # 1MB max request size
+  timeout: 30  # Request timeout in seconds
+  
+  # Security policies
+  policies:
+    # Blocking policies
+    block_jailbreaks: true
+    block_pii: true
+    block_secrets: true
+    block_malicious: true
+    
+    # Response filtering
+    filter_responses: true
+    sanitize_pii: true
+    remove_secrets: true
+    
+    # Rate limiting
+    rate_limit:
+      enabled: true
+      requests_per_minute: 100
+      burst_size: 20
+    
+    # IP blocking
+    ip_blocking:
+      enabled: true
+      blacklist: []
+      whitelist: []
+    
+    # User authentication
+    auth:
+      enabled: false
+      api_key_required: false
+      jwt_required: false
+
+  # Threat detection thresholds
+  thresholds:
+    jailbreak_confidence: 0.3
+    pii_confidence: 0.8
+    secret_confidence: 0.9
+    malicious_confidence: 0.7
+
+  # Logging and monitoring
+  logging:
+    enabled: true
+    log_all_requests: true
+    log_blocked_requests: true
+    log_forwarded_requests: false
+    retention_days: 30
+    
+  # Alerting
+  alerts:
+    enabled: true
+    email_notifications: false
+    webhook_url: ""
+    alert_on_block: true
+    alert_on_threat: true
+
+  # Performance tuning
+  performance:
+    max_concurrent_requests: 100
+    cache_size: 1000
+    cache_ttl: 300  # 5 minutes
+    enable_compression: true
