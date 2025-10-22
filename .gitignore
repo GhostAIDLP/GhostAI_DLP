@@ -225,3 +225,4 @@ scripts/
 .DS_Store
 Thumbs.dbvenv_clean/
 venv_stable/
+bert_jailbreak_model/
